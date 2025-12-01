@@ -26,6 +26,7 @@ const port = process.env.PORT || 3000; // Creates variable to store port. Uses .
 // PATHS: 
 app.set("view engine", "ejs"); // Allows you to use EJS for the web pages - requires a views folder and all files are .ejs
 app.use("/images",express.static(path.join(__dirname, "images"))); // allows you to create path for images (in folder titled "images")
+app.use(express.static('public'));
 
 // MIDDLEWARE: (Middleware is code that runs between the time the request comes to the server and the time the response is sent back. It allows you to intercept and decide if the request should continue. It also allows you to parse the body request from the html form, handle errors, check authentication, etc.)
 app.use(express.urlencoded({extended:true})); // Makes working with HTML forms a lot easier. Takes inputs and stores them in req.body (for post) or req.query (for get).
