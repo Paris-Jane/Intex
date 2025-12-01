@@ -13,8 +13,8 @@ const knex = require("knex")({ // KNEX: allows you to work with SQL databases
     connection: { // connect to the database. If you deploy this to an internet host, you need to use process.env.DATABASE_URL
         host: process.env.RDS_HOSTNAME || "localhost",
         user: process.env.RDS_USERNAME || "postgres",
-        password: process.env.RDS_PASSWORD || "SuperSecretPassword",
-        database: process.env.RDS_DB_NAME || "music",
+        password: process.env.RDS_PASSWORD || "admin",
+        database: process.env.RDS_DB_NAME || "ella_rising",
         port: process.env.RDS_PORT || 5432,
     }
 });
@@ -58,7 +58,16 @@ app.get('/users',(req,res) => {
 
 // PARTICIPANT MAINTENANCE PAGE: 
 app.get('/participants',(req,res) => {
-    res.render("participants"); 
+    knex.select().from('participants').then(table => { 
+        res.render("participants", {
+            participants: table,
+            message: 'John Doe has been deleted',
+            messageType: 'success'  // or 'danger', 'warning', 'info'
+        }); 
+    }).catch(err => { 
+            console.log(err); 
+            res.status(500).json({err});
+    });
 });
 
 // EVENT MAINTENANCE PAGE: 
