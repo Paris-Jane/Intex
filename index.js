@@ -11,11 +11,11 @@ let bodyParser = require("body-parser"); // BODY-PARSER: Allows you to read the 
 const knex = require("knex")({ // KNEX: allows you to work with SQL databases
     client: "pg", // connect to PostgreSQL (put database name here if something else)
     connection: { // connect to the database. If you deploy this to an internet host, you need to use process.env.DATABASE_URL
-        host: "localhost",
-        user: "postgres",
-        password: "admin",
-        database: "ella_rising", // put database name
-        port: 5432
+        host: process.env.RDS_HOSTNAME || "localhost",
+        user: process.env.RDS_USERNAME || "postgres",
+        password: process.env.RDS_PASSWORD || "admin",
+        database: process.env.RDS_DB_NAME || "ella_rising",
+        port: process.env.RDS_PORT || 5432,
     }
 });
 
@@ -197,6 +197,10 @@ app.get('/milestones',(req,res) => {
 // DONATINOS MAINTENANCE PAGE: 
 app.get('/donations',(req,res) => {
     res.render("donations"); 
+});
+
+app.get("/teapot",(req,res) => {
+    res.status(418).send("I'm a teapot");
 });
 
 // START TO LISTEN (& tell command line)
