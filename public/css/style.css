@@ -1348,3 +1348,229 @@ footer p {
         margin: 2rem auto;
     }
 }
+
+/* ============================================ */
+/* LANDING PAGE (index.ejs) SPECIFIC STYLES */
+/* ============================================ */
+
+/* Hero Button Spacing */
+.hero .donate-btn {
+    margin-top: 1.5rem;
+}
+
+/* Section Headings */
+.home-section-heading {
+    font-size: 2.5rem;
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+.home-section-subtitle {
+    font-size: 1.1rem;
+}
+
+/* Program Card Styles */
+.home-program-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.home-program-image-container {
+    position: relative;
+    min-height: 300px;
+    background-size: cover;
+    background-position: center;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    padding-bottom: 0.5rem;
+}
+
+.home-program-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+}
+
+.home-program-label-container {
+    text-align: center;
+    padding: 0.75rem;
+    position: relative;
+    z-index: 1;
+}
+
+.home-program-label {
+    background-color: rgba(153, 183, 198, 0.8);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* Grid Spacing for Programs */
+.home-programs-grid-top {
+    margin-top: 3rem;
+}
+
+.home-programs-grid-bottom {
+    margin-top: 2rem;
+}
+
+/* Enrollment Section */
+.home-enrollment-section {
+    background-color: var(--blush-light);
+    padding: 4rem 2rem;
+    margin-top: 4rem;
+}
+
+.home-enrollment-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.home-enrollment-heading {
+    color: var(--text-dark);
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    font-family: var(--font-display);
+}
+
+.home-enrollment-text {
+    color: var(--text-dark);
+    font-size: 1.3rem;
+    line-height: 1.8;
+    margin-bottom: 2rem;
+    font-weight: 500;
+}
+
+/* Sponsorship Section */
+.home-sponsorship-section {
+    padding: 4rem 2rem;
+}
+
+.home-sponsorship-content {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+    position: relative;
+}
+
+.home-sponsorship-buttons {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.home-sponsorship-flower {
+    width: 60px;
+    height: auto;
+    object-fit: contain;
+}
+
+.home-sponsorship-text {
+    color: var(--text-medium);
+    font-size: 1.1rem;
+    margin-top: 2rem;
+}
+
+.home-sponsorship-email {
+    color: var(--primary);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.home-sponsorship-email:hover {
+    text-decoration: underline;
+}
+
+.home-sponsorship-thanks {
+    color: var(--text-medium);
+    font-size: 1.2rem;
+    margin-top: 1rem;
+    font-style: italic;
+}
+
+/* Mission Section */
+.home-mission-section {
+    background-color: #fff;
+    padding: 4rem 2rem;
+    margin-top: 4rem;
+}
+
+.home-mission-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.home-mission-heading {
+    color: var(--primary);
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+}
+
+.home-mission-text {
+    color: var(--text-medium);
+    font-size: 1.1rem;
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+}
+
+.home-mission-text:last-child {
+    margin-bottom: 0;
+}
+
+/* Thank You Section */
+.home-thank-you-section {
+    background-color: #fff;
+    padding: 4rem 2rem;
+    margin-top: 4rem;
+}
+
+.home-thank-you-content {
+    max-width: 1000px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.home-thank-you-heading {
+    color: var(--primary);
+    font-size: 3rem;
+    margin-bottom: 2rem;
+    font-family: var(--font-display);
+}
+
+.home-thank-you-text {
+    color: var(--text-medium);
+    font-size: 1.2rem;
+    line-height: 1.8;
+}
+
+/* Button Styles for Enrollment/Sponsor */
+.btn-charcoal {
+    background-color: var(--charcoal);
+    color: white;
+    box-shadow: 0 4px 12px rgba(58, 63, 59, 0.3);
+}
+
+.btn-charcoal:hover {
+    background-color: #2a2f2b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(58, 63, 59, 0.4);
+}
+
+/* Footer Text */
+footer .footer-subtext {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
