@@ -19,7 +19,7 @@
             <ul class="nav-links">
                 <li><a href="/" class="selected-nav">Home</a></li>
                 <li><a href="/about">About</a></li>
-                <li><a href="/donate_now" >Donate Now</a></li>
+                <li><a href="/donate_now" class="donate-btn">Donate Now</a></li>
                 <li class="dropdown">
                     <span class="dropdown-toggle">
                         <a href="#">Pages ▾</a>
@@ -42,21 +42,122 @@
     <section class="hero">
         <div class="hero-content">
             <h1>Empowering Women, Transforming Lives</h1>
-            <p>Inviting young women to pursue higher education and embrace their heritage by providing culturally rooted programs and educational experiences.
-                Note: need to add donate button on this page (class: donate-btn)            </p>
+            <p>Inviting young women to pursue higher education and embrace their heritage by providing culturally rooted programs and educational experiences.</p>
+            <a href="/donate_now" class="btn btn-primary donate-btn" style="margin-top: 1.5rem;">Donate Now</a>
+        </div>
+    </section>
+
+    <!-- Programs Section -->
+    <section class="container mt-4">
+        <h2 class="text-center" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;">Our Programs</h2>
+        <p class="text-center text-muted mb-4" style="font-size: 1.1rem;">Culturally rooted programs that empower and inspire</p>
+        
+        <div class="grid grid-2" style="margin-top: 3rem;">
+            <div class="card" style="position: relative; overflow: hidden;">
+                <div style="position: relative; min-height: 300px; background: linear-gradient(135deg, rgba(153, 183, 198, 0.3) 0%, rgba(154, 181, 157, 0.3) 100%); border-radius: 12px; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center;">
+                    <!-- Placeholder for program image - you can add actual images here -->
+                    <div style="text-align: center; padding: 2rem;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">📚</div>
+                        <div style="background-color: rgba(153, 183, 198, 0.9); color: white; padding: 1rem 2rem; border-radius: 8px; font-weight: 600; font-size: 1.2rem;">
+                            SUMMIT + EDUCATIONAL PATHWAYS
+                        </div>
+                    </div>
+                </div>
+                <div class="card-header">
+                    <h3 class="card-title" style="color: var(--primary);">Summit + Educational Pathways</h3>
+                </div>
+                <div class="card-body">
+                    <p>Our educational pathways program provides comprehensive support for young women pursuing higher education, including mentorship, resources, and opportunities to connect with educational leaders and institutions.</p>
+                </div>
+            </div>
+            
+            <div class="card" style="position: relative; overflow: hidden;">
+                <div style="position: relative; min-height: 300px; background: linear-gradient(135deg, rgba(154, 181, 157, 0.3) 0%, rgba(151, 142, 196, 0.3) 100%); border-radius: 12px; margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: center;">
+                    <!-- Placeholder for program image - you can add actual images here -->
+                    <div style="text-align: center; padding: 2rem;">
+                        <div style="font-size: 4rem; margin-bottom: 1rem;">🔬</div>
+                        <div style="background-color: rgba(153, 183, 198, 0.9); color: white; padding: 1rem 2rem; border-radius: 8px; font-weight: 600; font-size: 1.2rem;">
+                            STEAM
+                        </div>
+                    </div>
+                </div>
+                <div class="card-header">
+                    <h3 class="card-title" style="color: var(--primary);">STEAM</h3>
+                </div>
+                <div class="card-body">
+                    <p>Our STEAM (Science, Technology, Engineering, Arts, and Mathematics) program engages young women in hands-on learning experiences, building confidence and skills in these critical fields through interactive workshops and projects.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-2" style="margin-top: 2rem;">
+            <div class="card">
+                <div style="font-size: 2.5rem; margin-bottom: 1rem; text-align: center;">🎵</div>
+                <div class="card-header">
+                    <h3 class="card-title" style="color: var(--primary);">Mariachi</h3>
+                </div>
+                <div class="card-body">
+                    <p>Celebrate and preserve cultural heritage through our mariachi program, where young women learn traditional music, build confidence, and connect with their roots.</p>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div style="font-size: 2.5rem; margin-bottom: 1rem; text-align: center;">💃</div>
+                <div class="card-header">
+                    <h3 class="card-title" style="color: var(--primary);">Ballet Folklorico</h3>
+                </div>
+                <div class="card-body">
+                    <p>Our ballet folklorico program teaches traditional dance, fostering cultural pride, physical fitness, and artistic expression among participants.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Enrollment Section -->
+    <section style="background-color: var(--blush-light); padding: 4rem 2rem; margin-top: 4rem;">
+        <div style="max-width: 1000px; margin: 0 auto; text-align: center;">
+            <h2 style="color: var(--text-dark); font-size: 2.5rem; margin-bottom: 2rem; font-family: var(--font-display);">Enroll in Ella Rises</h2>
+            <p style="color: var(--text-dark); font-size: 1.3rem; line-height: 1.8; margin-bottom: 2rem; font-weight: 500;">
+                Enroll in Ella Rises and participate in our mariachi, ballet folklorico and STEAM programs!
+            </p>
+            <a href="#" class="btn btn-primary btn-large" style="background-color: var(--charcoal); color: white; box-shadow: 0 4px 12px rgba(58, 63, 59, 0.3);">
+                Click here to enroll!
+            </a>
+        </div>
+    </section>
+
+    <!-- Sponsorship Section -->
+    <section class="container mt-4" style="padding: 4rem 2rem;">
+        <div style="max-width: 800px; margin: 0 auto; text-align: center; position: relative;">
+            <div style="display: flex; justify-content: center; align-items: center; gap: 2rem; margin-bottom: 2rem;">
+                <!-- Decorative flower - left -->
+                <div style="font-size: 3rem;">🌸</div>
+                <a href="#" class="btn btn-primary btn-large" style="background-color: var(--charcoal); color: white; box-shadow: 0 4px 12px rgba(58, 63, 59, 0.3);">
+                    Become a sponsor!
+                </a>
+                <!-- Decorative flower - right -->
+                <div style="font-size: 3rem;">🌺</div>
+            </div>
+            <p style="color: var(--text-medium); font-size: 1.1rem; margin-top: 2rem;">
+                If you would like to further discuss how you would like to contribute, please email 
+                <a href="mailto:nadia@ellarises.org" style="color: var(--primary); text-decoration: none; font-weight: 600;">nadia@ellarises.org</a>.
+            </p>
+            <p style="color: var(--text-medium); font-size: 1.2rem; margin-top: 1rem; font-style: italic;">
+                ¡Muchas gracias!
+            </p>
         </div>
     </section>
 
     <!-- About Section -->
     <section class="container mt-4">
-        <h2 class="text-center" style="font-size: 2.5rem; color: #d4a5a5; margin-bottom: 1rem;">What We Do</h2>
+        <h2 class="text-center" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;">What We Do</h2>
         <p class="text-center text-muted mb-4" style="font-size: 1.1rem;">Our programs and initiatives make a real difference in women's lives</p>
         
         <div class="grid grid-3">
             <div class="card">
                 <div style="font-size: 2.5rem; margin-bottom: 1rem;">📚</div>
                 <div class="card-header">
-                    <h3 class="card-title" style="color: #7eb8b8;">Education & Skills Training</h3>
+                    <h3 class="card-title" style="color: var(--primary);">Education & Skills Training</h3>
                 </div>
                 <div class="card-body">
                     <p>We provide access to educational resources, vocational training, and skill development programs to help women achieve economic independence and career success.</p>
@@ -66,7 +167,7 @@
             <div class="card">
                 <div style="font-size: 2.5rem; margin-bottom: 1rem;">💼</div>
                 <div class="card-header">
-                    <h3 class="card-title" style="color: #7eb8b8;">Career Support</h3>
+                    <h3 class="card-title" style="color: var(--primary);">Career Support</h3>
                 </div>
                 <div class="card-body">
                     <p>Our mentorship programs connect women with industry professionals, offering guidance, networking opportunities, and pathways to meaningful employment.</p>
@@ -76,7 +177,7 @@
             <div class="card">
                 <div style="font-size: 2.5rem; margin-bottom: 1rem;">🤝</div>
                 <div class="card-header">
-                    <h3 class="card-title" style="color: #7eb8b8;">Community Building</h3>
+                    <h3 class="card-title" style="color: var(--primary);">Community Building</h3>
                 </div>
                 <div class="card-body">
                     <p>We foster supportive communities where women can connect, share experiences, and find encouragement through workshops, events, and support groups.</p>
@@ -88,15 +189,15 @@
     <!-- Mission Section -->
     <section style="background-color: #fff; padding: 4rem 2rem; margin-top: 4rem;">
         <div style="max-width: 1000px; margin: 0 auto; text-align: center;">
-            <h2 style="color: #d4a5a5; font-size: 2.5rem; margin-bottom: 2rem;">Our Mission</h2>
-            <p style="color: #666; font-size: 1.1rem; line-height: 1.8; margin-bottom: 1.5rem;">The Women's Empowerment Foundation is dedicated to breaking down barriers and creating pathways to success for women from all backgrounds. Through comprehensive programs in education, career development, and personal growth, we help women realize their full potential.</p>
-            <p style="color: #666; font-size: 1.1rem; line-height: 1.8;">We believe that when women thrive, entire communities flourish. Every donation, volunteer hour, and word of encouragement contributes to building a more equitable and empowered future for all women.</p>
+            <h2 style="color: var(--primary); font-size: 2.5rem; margin-bottom: 2rem;">Our Mission</h2>
+            <p style="color: var(--text-medium); font-size: 1.1rem; line-height: 1.8; margin-bottom: 1.5rem;">Ella Rises is dedicated to breaking down barriers and creating pathways to success for young women from all backgrounds. Through comprehensive programs in education, cultural arts, and personal growth, we help women realize their full potential.</p>
+            <p style="color: var(--text-medium); font-size: 1.1rem; line-height: 1.8;">We believe that when women thrive, entire communities flourish. Every donation, volunteer hour, and word of encouragement contributes to building a more equitable and empowered future for all women.</p>
         </div>
     </section>
 
     <!-- Stats Section -->
     <section class="container mt-4">
-        <h2 class="text-center" style="font-size: 2.5rem; color: #d4a5a5; margin-bottom: 1rem;">Our Impact</h2>
+        <h2 class="text-center" style="font-size: 2.5rem; color: var(--primary); margin-bottom: 1rem;">Our Impact</h2>
         <p class="text-center text-muted mb-4" style="font-size: 1.1rem;">Together, we're making a difference</p>
         
         <div class="stats-grid">
@@ -119,6 +220,16 @@
                 <div class="stat-number">10+</div>
                 <div class="stat-label">Partner Organizations</div>
             </div>
+        </div>
+    </section>
+
+    <!-- Thank You Section -->
+    <section style="background-color: #fff; padding: 4rem 2rem; margin-top: 4rem;">
+        <div style="max-width: 1000px; margin: 0 auto; text-align: center;">
+            <h2 style="color: var(--primary); font-size: 3rem; margin-bottom: 2rem; font-family: var(--font-display);">THANK YOU</h2>
+            <p style="color: var(--text-medium); font-size: 1.2rem; line-height: 1.8;">
+                A big thank you to our supporters who make it possible for us to accomplish our goals and provide these wonderful programs for our young women!
+            </p>
         </div>
     </section>
 
