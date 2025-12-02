@@ -64,33 +64,15 @@ app.get('/participants',(req,res) => {
             message: '',
             messageType: 'success',
             // Initialize empty filters for first page load
-            filters: {
-                searchColumn: '',
-                searchValue: '',
-                city: ['all'],
-                school: ['all'],
-                interest: ['all'],
-                donations: ['all'],
-                sortColumn: '',
-                sortOrder: 'asc'
-            }
+            filters: {searchColumn: '',searchValue: '',city: ['all'],school: ['all'],interest: ['all'],donations: ['all'],sortColumn: '',sortOrder: 'asc'}
         }); 
     }).catch(err => { 
         console.log(err); 
         res.status(500).json({err});
     });
 });
-app.post('/filter', (req, res) => {
-    const { 
-        searchColumn, 
-        searchValue, 
-        city, 
-        school, 
-        interest, 
-        donations,
-        sortColumn, 
-        sortOrder 
-    } = req.body;
+app.post('/filter-participants', (req, res) => {
+    const { searchColumn, searchValue, city, school, interest, donations,sortColumn, sortOrder } = req.body;
 
     // Start with knex query builder
     let query = knex('participants');
