@@ -20,6 +20,7 @@
                 <li><a href="/">Home</a></li>
                 <li><a href="/about">About</a></li>
                 <li><a href="/donate_now">Donate Now</a></li>
+                <!--UPDATE LATER: make it so it will only display dropdown if user is logged in-->
                 <li class="dropdown">
                     <span class="dropdown-toggle">
                         <a href="#" class="selected-nav">Pages ▾</a>
@@ -33,6 +34,7 @@
                         <li><a href="/donations">Donations</a></li>
                     </ul>
                 </li>
+                <!--UPDATE LATER: make it so that it will say "logout" if user is logged in-->
                 <li><a href="/login" class="login-btn">Login</a></li>
             </ul>
         </div>
@@ -60,13 +62,14 @@
             <div class="table-header">
                 <h2 class="table-title">Ella Rises Participants</h2>
                 <div class="table-actions">
+                    <!--UPDATE LATER: only display "Add" button if user is level Manager-->
                     <button class="btn btn-add">
                         <a href="/add/participants">+ Add Participant</a>
                     </button>
                 </div>
             </div>
 
-            <!-- Search + Filters in ONE form (GET) -->
+            <!-- Search + Filters-->
             <div class="filter-section">
                 <form id="participantsForm" method="GET" action="/participants">
                     <div class="filter-row">
@@ -301,6 +304,7 @@
             </div>
 
             <!-- Bulk Actions Bar -->
+            <!--UPDATE LATER: only display if user level admin/manager-->
             <div id="bulkActionsBar" style="display: none; background-color: #f8f0f0; padding: 1rem 1.5rem; border-bottom: 1px solid #e0e0e0;">
                 <div class="flex-between">
                     <div>
@@ -319,6 +323,7 @@
                 <table>
                     <thead>
                         <tr>
+                            <!--UPDATE LATER: only display checkbox (only next row) if user is admin-->
                             <th style="width: 40px;"><input type="checkbox" id="selectAll"></th>
                             <th class="sortable" data-column="participant_first_name">First Name <span class="sort-icon">⇅</span></th>
                             <th class="sortable" data-column="participant_last_name">Last Name <span class="sort-icon">⇅</span></th>
@@ -349,6 +354,7 @@
                                 %>
                                 <tr>
                                     <!-- Use primary key as value for delete/edit -->
+                                    <!--UPDATE LATER: only display checkbox (only next row) if user is admin-->
                                     <td><input type="checkbox" class="row-checkbox" value="<%= p.participant_id %>" data-name="<%= p.participant_first_name %> <%= p.participant_last_name %>"></td>
                                     <td><%= p.participant_first_name %></td>
                                     <td><%= p.participant_last_name %></td>
