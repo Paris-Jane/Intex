@@ -365,7 +365,7 @@ textarea.form-control {
 
 /* Filter Section (top search row) */
 .filter-section {
-    background-color: var(--powder-blue);
+    background-color: white;
     padding: 2rem;
     box-shadow: 0 2px 12px rgba(58, 63, 59, 0.06);
 }
@@ -525,6 +525,7 @@ textarea.form-control {
 table {
     width: 100%;
     border-collapse: collapse;
+    overflow-x: auto;
 }
 
 thead {

@@ -15,17 +15,20 @@
     <!-- Navigation -->
     <nav>
         <div class="nav-container">
-            <div class="logo"><a href="/">Ella Rises</a></div>
+            <div class="logo">
+                <a href="/"><img src="/images/logo.png" alt="Ella Rises Logo"> ELLA RISES</a>
+            </div>
             <ul class="nav-links">
                 <li><a href="/">Home</a></li>
                 <li><a href="/about">About</a></li>
                 <li><a href="/donate_now">Donate Now</a></li>
+                <!--UPDATE LATER: make the pages dropdown only show if user is logged in-->
                 <li class="dropdown">
                     <span class="dropdown-toggle">
                         <a href="#" class="selected-nav">Pages ▾</a>
                     </span>
                     <ul class="dropdown-menu">
-                        <li><a href="/users">Users</a></li>
+                        <li><a href="/users">Users</a></li> <!--UPDATE LATER: make the "users" page only show to managers-->
                         <li><a href="/participants">Participants</a></li>
                         <li><a href="/events">Events</a></li>
                         <li><a href="/surveys">Surveys</a></li>
@@ -33,6 +36,7 @@
                         <li><a href="/donations">Donations</a></li>
                     </ul>
                 </li>
+                <!--UPDATE LATER: make the login button change to "logout" when user is logged in-->
                 <li><a href="/login" class="login-btn">Login</a></li>
             </ul>
         </div>
@@ -60,9 +64,9 @@
             <!--Header with info about what database (and add button)-->
             <div class="table-header">
                 <h2 class="table-title">Ella Rises Participants</h2>
-                <!--UPDATE FOR MANAGER ONLY (later)-->
+                <!--UPDATE LATER: "add" button should only show for managers-->
                 <div class="table-actions">
-                    <button class="btn btn-add" onclick="window.location.href='/participants/add'">+ Add Participant</button>
+                    <button class="btn btn-add"><a  href='/add/participants'>+ Add Participant</a></button>
                 </div>
             </div>
 
@@ -123,10 +127,8 @@
                                     <h4 class="filter-card-title">City</h4>
                                 </div>
                                 <div class="card-body filter-card-scroll">
-                                    <% 
-                                    const cityFilters = (typeof filters !== 'undefined' && filters.city) ? filters.city : ['all'];
-                                    const isCityAll = cityFilters.includes('all');
-                                    %>
+                                    <% const cityFilters = (typeof filters !== 'undefined' && filters.city) ? filters.city : ['all'];
+                                    const isCityAll = cityFilters.includes('all');%>
                                     <label class="filter-checkbox-label">
                                         <input type="checkbox" name="city" value="all" class="city-checkbox" <%= isCityAll ? 'checked' : '' %>> All
                                     </label>
@@ -278,31 +280,28 @@
                 </form>
 
             </div>
-            <!-- Bulk Actions Bar (Hidden by default) -->
+            <!-- Bulk Actions Bar: Edit/Delete (Hidden by default) -->
+            <!--UPDATE LATER: only show bulk action bar if manager-->
             <div id="bulkActionsBar" style="display: none; background-color: #f8f0f0; padding: 1rem 1.5rem; border-bottom: 1px solid #e0e0e0;">
                 <div class="flex-between">
                     <div>
                         <span id="selectedCount" style="font-weight: 600; color: #666;">0 selected</span>
                     </div>
                     <div class="flex gap-2">
-                        <button class="btn btn-secondary btn-small" id="editSelected" style="display: none;">
-                            Edit
-                        </button>
-                        <button class="btn btn-danger btn-small" id="deleteSelected">
-                            Delete Selected
-                        </button>
-                        <button class="btn btn-outline btn-small" id="clearSelection">
-                            Clear Selection
-                        </button>
+                        <button class="btn btn-secondary btn-small" id="editSelected" style="display: none;"> Edit </button>
+                        <button class="btn btn-danger btn-small" id="deleteSelected"> Delete Selected </button>
+                        <button class="btn btn-outline btn-small" id="clearSelection"> Clear Selection</button>
                     </div>
                 </div>
             </div>
 
             <!-- Table -->
-            <div style="overflow-x: auto;">
+            <div>
                 <table>
+                    <!--Table Header-->
                     <thead>
                         <tr>
+                            <!--UPDATE LATER: only display checkbox (next three rows) if Manager-->
                             <th style="width: 40px;">
                                 <input type="checkbox" id="selectAll">
                             </th>
