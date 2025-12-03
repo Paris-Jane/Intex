@@ -2681,3 +2681,20 @@ body {
 .login-error-container {
   margin-top: 2rem;
 }
+
+.view-comments-btn .material-symbols-outlined {
+  font-size: 1.3rem;
+  font-weight: 350;
+  vertical-align: middle;
+}
+
+.view-comments-btn {
+  padding: 0.15rem 0.25rem;
+  line-height: 1;
+  background-color: transparent;
+}
+
+.view-comments-btn:hover {
+  background-color: #f0f0f0;
+  cursor: pointer;
+}

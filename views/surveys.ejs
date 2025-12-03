@@ -9,6 +9,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Surveys - Ella Rises</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 </head>
 <body>
     <!-- Navigation -->
@@ -371,7 +372,7 @@
                             <th class="sortable" data-column="survey_recommendation_score">Recommendation Rating<span class="sort-icon">⇅</span></th>
                             <th class="sortable" data-column="survey_overall_score">Overall Rating<span class="sort-icon">⇅</span></th>
                             <th class="sortable" data-column="survey_nps_bucket">Net Promoter Rating <span class="sort-icon">⇅</span></th>
-                            <th class="sortable" data-column="survey_comments">Comments <span class="sort-icon">⇅</span></th>
+                            <th class="sortable" data-column="survey_comments" style="min-width: 80px; width: 80px;">Comments <span class="sort-icon">⇅</span></th>
                             <th class="sortable" data-column="survey_submission_date">Submission Date <span class="sort-icon">⇅</span></th>
                         </tr>
                     </thead>
@@ -417,7 +418,17 @@
                                     <td><%= s.survey_recommendation_score %></td>
                                     <td><%= s.survey_overall_score %></td>
                                     <td><%= s.survey_nps_bucket %></td>
-                                    <td><%= s.survey_comments || '' %></td>
+                                    <td style="text-align: center;">
+                                        <% if (s.survey_comments && s.survey_comments.trim() !== '') { %>
+                                            <button class="btn btn-small view-comments-btn" 
+                                                    data-comments="<%= s.survey_comments.replace(/"/g, '&quot;').replace(/'/g, '&#39;') %>"
+                                                    data-name="<%= s.participant_first_name %> <%= s.participant_last_name %>"
+                                                    data-event="<%= s.event_name %>"
+                                                    style="padding: 0.3rem 0.6rem; font-size: 0.9rem;">
+                                                <span class="material-symbols-outlined">mode_comment</span>
+                                            </button>
+                                        <% } %>
+                                    </td>
                                     <td><%= formattedSubmissionDate %></td>
                                 </tr>
                             <% }); %>
@@ -744,6 +755,54 @@
             const modal = document.getElementById('deleteModal');
             if (modal) modal.remove();
         }
+
+        // Show comments modal
+        function showCommentsModal(comments, participantName, eventName) {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.id = 'commentsModal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Comments</h3>
+                        <button class="modal-close" onclick="closeCommentsModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="margin-bottom: 0.5rem; color: #666; font-weight: 600;">
+                            ${participantName} - ${eventName}
+                        </p>
+                        <p style="font-size: 1rem; color: #333; white-space: pre-wrap; line-height: 1.6;">
+                            ${comments}
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-primary" onclick="closeCommentsModal()">Close</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) closeCommentsModal();
+            });
+        }
+
+        function closeCommentsModal() {
+            const modal = document.getElementById('commentsModal');
+            if (modal) modal.remove();
+        }
+
+        // View Comments buttons
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.view-comments-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const comments = this.getAttribute('data-comments');
+                    const name = this.getAttribute('data-name');
+                    const event = this.getAttribute('data-event');
+                    showCommentsModal(comments, name, event);
+                });
+            });
+        });
 
         // Clear Filters
         document.getElementById('clearFilters').addEventListener('click', function() {
