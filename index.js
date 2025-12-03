@@ -2,7 +2,11 @@
 // This code will allow users of a non profit to manage visitor information, user information, events, milestones, and donations
 
 // REQUIRE LIBRARIES AND STORE IN VARIABLE (if applicable):
-require("dotenv").config(); // DOTENV: loads ENVIROMENT VARIABLES from .env file; Allows you to use process.env
+require("dotenv").config();
+
+// Temporary debug - remove after fixing
+console.log("Password loaded:", process.env.RDS_PASSWORD ? "YES" : "NO");
+
 const express = require("express"); // EXPRESS: helps with web development
 const session = require("express-session"); // EXPRESS SESSION: needed for session variable. Stored on the server to hold data; Essentially adds a new property to every req object that allows you to store a value per session.
 let path = require("path"); // PATH: helps create safe paths when working with file/folder locations
@@ -12,11 +16,14 @@ const knex = require("knex")({
   client: "pg", // connect to PostgreSQL (put database name here if something else)
   connection: {
     // connect to the database. If you deploy this to an internet host, you need to use process.env.DATABASE_URL
-    host: process.env.RDS_HOSTNAME || "localhost",
-    user: process.env.RDS_USERNAME || "postgres",
-    password: process.env.RDS_PASSWORD || "admin",
-    database: process.env.RDS_DB_NAME || "ella_rising",
+    host:
+      process.env.RDS_HOSTNAME ||
+      "awseb-e-zmtvhhdgpm-stack-awsebrdsdatabase-cjcdmyxevp9y.c128cucaotxd.us-east-2.rds.amazonaws.com",
+    user: process.env.RDS_USERNAME || "intex214",
+    password: process.env.RDS_PASSWORD || "Hopethisworks1",
+    database: process.env.RDS_DB_NAME || "ebdb",
     port: process.env.RDS_PORT || 5432,
+    ssl: { rejectUnauthorized: false },
   },
 });
 
@@ -105,15 +112,15 @@ app.post("/login", (req, res) => {
 
   knex
     .select()
-    .from("users")
-    .where({ username: username, password: password })
+    .from("participants")
+    .where({ participant_username: username, participant_password: password })
     .first()
-    .then((user) => {
-      if (user) {
+    .then((participant) => {
+      if (participant) {
         req.session.user = {
-          id: user.id,
-          username: user.username,
-          level: user.level,
+          id: participant.participant_id,
+          username: participant.participant_username,
+          level: participant.participant_role || "participant",
         };
         res.redirect("/user_profile");
       } else {
@@ -122,8 +129,8 @@ app.post("/login", (req, res) => {
       }
     })
     .catch((err) => {
-      console.error("❌ Database error during login:", err.message); // Improve this
-      console.error("Full error:", err); // Add this
+      console.error("Database error during login:", err.message);
+      console.error("Full error:", err);
       res.render("login", { error_message: "Database error" });
     });
 });
