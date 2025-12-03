@@ -537,6 +537,7 @@ app.post("/add/:table", async (req, res) => {
             console.log("Error adding record:", err.message);
             res.status(500).json({ error: err.message });
         });
+    });
 
     // Route to add the form inputs into the database (for all "add" pages)
     app.post("/add/:table", async (req, res) => {
