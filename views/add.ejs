@@ -174,8 +174,8 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Date of Birth</label>
-                            <input type="date" class="form-input" name="participant_dob">
+                            <label class="form-label">Date of Birth<span class="required">*</span></label>
+                            <input type="date" class="form-input" name="participant_dob" required>
                         </div>
                         
                         <div class="form-group">
@@ -216,7 +216,7 @@
 
                         <div class="form-group">
                             <label class="form-label">Event Name <span class="required">*</span></label>
-                            <select class="form-select" name="event_id" id="eventSelect" required>
+                            <select class="form-select" name="event_type_id" id="eventSelect" required>
                                 <option value="">Select an Event</option>
                                 <option value="1">Mentor Office Hours</option>
                                 <option value="2">Robotics Lab Saturday</option>
@@ -239,13 +239,13 @@
 
                         <div class="form-group">
                             <label class="form-label">Location <span class="required">*</span></label>
-                            <input list="locations" class="form-input" name="event_location" placeholder="Select or type location" required>
-                            <datalist id="locations">
-                                <option value="Ella Rises HQ">
-                                <option value="Virtual Zoom">
-                                <option value="Art Studio 2">
-                                <option value="Community Center Room A">
-                                <option value="Local Library">
+                            <select class="form-select" name="event_location" id="eventSelect" required>
+                                <option value="">Select a location</option>
+                                <option value="Ella Rises HQ">Ella Rises HQ</option>
+                                <option value="Virtual Zoom"">Virtual Zoom"</option>
+                                <option value="Art Studio 2">Art Studio 2</option>
+                                <option value="Community Center Room A">Community Center Room A</option>
+                                <option value="Local Library">Local Library</option>
                             </datalist>
                         </div>
 
@@ -262,7 +262,7 @@
                         
                         <div class="form-group">
                             <label class="form-label">Event Date <span class="required">*</span></label>
-                            <input type="date" class="form-input" name="date" required>
+                            <input type="date" class="form-input" name="event_date" required>
                         </div>
 
                         <div class="form-row">
@@ -301,13 +301,13 @@
                     </div>
                 </form>
 
-            <!-- Add-survey Form -->
-            <%} else if (table_name === "surveys"){%>
-                <form id="addForm" class="modern-form" action="/add/surveys" method="POST">
+            <!-- Add-Registration Form -->
+            <%} else if (table_name === "event_registration"){%>
+                <form id="addForm" class="modern-form" action="/add/event_registration" method="POST">
                     
                     <div class="form-section">
                         <h2 class="section-title">Participant Information</h2>
-                        <p class="section-description">Who is this survey for?</p>
+                        <p class="section-description">Who is this Event Registration for?</p>
 
                         <div class="form-group">
                             <label class="form-label">Participant ID <span class="required">*</span></label>
@@ -318,7 +318,7 @@
 
                     <div class="form-section">
                         <h2 class="section-title">Event Selection</h2>
-                        <p class="section-description">Select the event this survey relates to</p>
+                        <p class="section-description">Select the event to register for</p>
 
                         <div class="form-group">
                             <label class="form-label">Event Name <span class="required">*</span></label>
@@ -358,6 +358,14 @@
                             <label class="form-label">Status <span class="required">*</span></label>
                             <div class="radio-group">
                                 <label class="radio-label">
+                                    <input type="radio" name="registration_status" value="registered" id="regStatusSelect" required>
+                                    <span class="radio-custom"></span>
+                                    <span class="radio-text">
+                                        <strong>Registered</strong>
+                                        <small>Participant has registered</small>
+                                    </span>
+                                </label>
+                                <label class="radio-label">
                                     <input type="radio" name="registration_status" value="attended" id="regStatusSelect" required>
                                     <span class="radio-custom"></span>
                                     <span class="radio-text">
@@ -387,25 +395,29 @@
                     </div>
 
                     <div class="form-actions">
-                        <a href="/surveys" class="btn btn-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-primary">Add Survey Response</button>
+                        <a href="/event_registration" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Add Registration</button>
                     </div>
                 </form>
 
             <!-- Add-milestones Form -->
             <%} else if (table_name === "milestones"){%>
                 <form id="addForm" class="modern-form" action="/add/milestones" method="POST">
-                    
+                    <!--Gather participant ID (if not passed along by route)-->
+                    <% if (!pass_id) { %>
                     <div class="form-section">
                         <h2 class="section-title">Participant Information</h2>
                         <p class="section-description">Who achieved this milestone?</p>
-
-                        <div class="form-group">
-                            <label class="form-label">Participant ID <span class="required">*</span></label>
-                            <input type="number" class="form-input" name="participant_id" placeholder="Enter participant ID" min="1" required>
-                            <span class="form-hint">Must be an existing participant</span>
-                        </div>
+                            <div class="form-group">
+                                <label class="form-label">Participant ID <span class="required">*</span></label>
+                                <input type="number" class="form-input" name="participant_id" placeholder="Enter participant ID" min="1" required>
+                                <span class="form-hint">Must be an existing participant</span>
+                            </div>
                     </div>
+                    <!--If ID is passed along in route: save it in a hidden form (to be passed along with the submission)-->
+                    <%} else {%>
+                        <input type="hidden" name="participant_id" value="<%= pass_id %>">
+                    <%};%>
 
                     <div class="form-section">
                         <h2 class="section-title">Milestone Details</h2>
@@ -482,20 +494,197 @@
                     </div>
                 </form>
 
+            <!-- Add-survey response Form -->
+            <%} else if (table_name === "survey_results"){%>
+                <form id="addForm" class="modern-form" action="/add/survey_results" method="POST">
+                    <!--Gather participant ID (if not passed along by route)-->
+                    <% if (!pass_id) { %>
+                    <div class="form-section">
+                        <h2 class="section-title">Participant Information</h2>
+                        <p class="section-description">Who is this survey for?</p>
+                            <div class="form-group">
+                                <label class="form-label">Participant ID <span class="required">*</span></label>
+                                <input type="number" class="form-input" name="participant_id" placeholder="Enter participant ID" min="1" required>
+                                <span class="form-hint">Must be an existing participant</span>
+                            </div>
+                    </div>
+                    <!--If ID is passed along in route: save it in a hidden form (to be passed along with the submission)-->
+                    <%} else {%>
+                        <input type="hidden" name="participant_id" value="<%= pass_id %>">
+                    <%};%>
+
+                    <div class="form-section">
+                        <h2 class="section-title">Event Selection</h2>
+                        <p class="section-description">Select the event to fill out survey for</p>
+
+                        <div class="form-group">
+                            <label class="form-label">Event Name <span class="required">*</span></label>
+                            <select class="form-select" name="event_name" id="eventSelect" required>
+                                <option value="">Select an Event</option>
+                                <option value="Mentor Office Hours">Mentor Office Hours</option>
+                                <option value="Robotics Lab Saturday">Robotics Lab Saturday</option>
+                                <option value="Girls in STEAM Mentoring">Girls in STEAM Mentoring</option>
+                                <option value="Monthly Coding Club">Monthly Coding Club</option>
+                                <option value="Intro to Painting Class">Intro to Painting Class</option>
+                                <option value="Data Science Study Group">Data Science Study Group</option>
+                                <option value="Leadership Circle Meetup">Leadership Circle Meetup</option>
+                                <option value="Web Dev Bootcamp Night">Web Dev Bootcamp Night</option>
+                                <option value="Ella Rises Annual Leadership Conference">Ella Rises Annual Leadership Conference</option>
+                                <option value="Monthly Art Studio Workshop">Monthly Art Studio Workshop</option>
+                                <option value="STEAM Summit & Expo">STEAM Summit & Expo</option>
+                                <option value="AI for Beginners Bootcamp">AI for Beginners Bootcamp</option>
+                                <option value="Digital Design Workshop">Digital Design Workshop</option>
+                                <option value="Community STEM Hackathon">Community STEM Hackathon</option>
+                                <option value="Women in Tech & Art Showcase">Women in Tech & Art Showcase</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Event Date & Time <span class="required">*</span></label>
+                            <select class="form-select" name="event_id" id="eventInstanceSelect" required disabled>
+                                <option value="">Select an event above first</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <h2 class="section-title">Survey Questions</h2>
+                        <p class="section-description">We would love to know how you felt about this event!</p>
+                        <p class="section-description">Please rank how you felt (on a scale of 0-5)</p>
+
+                            <!-- Survey: Satisfaction -->
+                            <div class="form-group">
+                                <label class="form-label">I felt satisfied with this event. <span class="required">*</span></label>
+                                <div class="radio-group">
+                                    <% for (let i = 0; i <= 5; i++) { %>
+                                        <label class="radio-label">
+                                            <input type="radio" name="survey_satisfaction_score" value="<%= i %>" required>
+                                            <span class="radio-custom"></span>
+                                            <span class="radio-text">
+                                                <strong><%= i %></strong>
+                                                <% if (i === 0) { %><small>Strongly disagree</small><% } %>
+                                                <% if (i === 5) { %><small>Strongly agree</small><% } %>
+                                            </span>
+                                        </label>
+                                    <% } %>
+                                </div>
+                            </div>
+
+                            <!-- Survey: Usefulness -->
+                            <div class="form-group">
+                                <label class="form-label">This event was extremely helpful. <span class="required">*</span></label>
+                                <div class="radio-group">
+                                    <% for (let i = 0; i <= 5; i++) { %>
+                                        <label class="radio-label">
+                                            <input type="radio" name="survey_usefulness_score" value="<%= i %>" required>
+                                            <span class="radio-custom"></span>
+                                            <span class="radio-text">
+                                                <strong><%= i %></strong>
+                                                <% if (i === 0) { %><small>Strongly disagree</small><% } %>
+                                                <% if (i === 5) { %><small>Strongly agree</small><% } %>
+                                            </span>
+                                        </label>
+                                    <% } %>
+                                </div>
+                            </div>
+
+                            <!-- Survey: Instructor -->
+                            <div class="form-group">
+                                <label class="form-label">The event instructor was extremely helpful. <span class="required">*</span></label>
+                                <div class="radio-group">
+                                    <% for (let i = 0; i <= 5; i++) { %>
+                                        <label class="radio-label">
+                                            <input type="radio" name="survey_instructor_score" value="<%= i %>" required>
+                                            <span class="radio-custom"></span>
+                                            <span class="radio-text">
+                                                <strong><%= i %></strong>
+                                                <% if (i === 0) { %><small>Strongly disagree</small><% } %>
+                                                <% if (i === 5) { %><small>Strongly agree</small><% } %>
+                                            </span>
+                                        </label>
+                                    <% } %>
+                                </div>
+                            </div>
+
+                            <!-- Survey: Recommendation -->
+                            <div class="form-group">
+                                <label class="form-label">I would recommend this event to family and friends. <span class="required">*</span></label>
+                                <div class="radio-group">
+                                    <% for (let i = 0; i <= 5; i++) { %>
+                                        <label class="radio-label">
+                                            <input type="radio" name="survey_recommendation_score" value="<%= i %>" required>
+                                            <span class="radio-custom"></span>
+                                            <span class="radio-text">
+                                                <strong><%= i %></strong>
+                                                <% if (i === 0) { %><small>Strongly disagree</small><% } %>
+                                                <% if (i === 5) { %><small>Strongly agree</small><% } %>
+                                            </span>
+                                        </label>
+                                    <% } %>
+                                </div>
+                            </div>
+
+                            <!-- Survey: Overall -->
+                            <div class="form-group">
+                                <label class="form-label">Overall, I really enjoyed and appreciated this event. <span class="required">*</span></label>
+                                <div class="radio-group">
+                                    <% for (let i = 0; i <= 5; i++) { %>
+                                        <label class="radio-label">
+                                            <input type="radio" name="survey_overall_score" value="<%= i %>" required>
+                                            <span class="radio-custom"></span>
+                                            <span class="radio-text">
+                                                <strong><%= i %></strong>
+                                                <% if (i === 0) { %><small>Strongly disagree</small><% } %>
+                                                <% if (i === 5) { %><small>Strongly agree</small><% } %>
+                                            </span>
+                                        </label>
+                                    <% } %>
+                                </div>
+                            </div>
+
+                            <!-- Comments -->
+                            <div class="form-group">
+                                <label class="form-label" for="survey_comments">Additional comments</label>
+                                <textarea
+                                    id="survey_comments"
+                                    name="survey_comments"
+                                    class="form-control"
+                                    rows="4"
+                                    placeholder="Share any thoughts or suggestions about this event..."
+                                ></textarea>
+                            </div>
+
+                            <!-- Hidden date/time fields -->
+                            <input type="hidden" name="submission_date" id="submission_date">
+                            <input type="hidden" name="submitssion_time" id="submitssion_time">
+                    </div>
+
+                    <div class="form-actions">
+                        <a href="/survey_response" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Add Survey Response</button>
+                    </div>
+                </form>
+
             <!--Add Donations Form-->
             <%} else if (table_name === "donations"){%>
                 <form id="addForm" class="modern-form" action="/add/donations" method="POST">
                     
-                    <div class="form-section">
-                        <h2 class="section-title">Donor Information</h2>
-                        <p class="section-description">Who made this donation?</p>
-
-                        <div class="form-group">
-                            <label class="form-label">Participant ID <span class="required">*</span></label>
-                            <input type="number" class="form-input" name="participant_id" placeholder="Enter participant ID" min="1" required>
-                            <span class="form-hint">Must be an existing participant</span>
+                    <!--Gather participant ID (if not passed along by route)-->
+                    <% if (!pass_id) { %>
+                        <div class="form-section">
+                            <h2 class="section-title">Donor Information</h2>
+                            <p class="section-description">Who made this donation?</p>
+    
+                            <div class="form-group">
+                                <label class="form-label">Participant ID <span class="required">*</span></label>
+                                <input type="number" class="form-input" name="participant_id" placeholder="Enter participant ID" min="1" required>
+                                <span class="form-hint">Must be an existing participant</span>
+                            </div>
                         </div>
-                    </div>
+                    <!--If ID is passed along in route: save it in a hidden form (to be passed along with the submission)-->
+                    <%} else {%>
+                        <input type="hidden" name="participant_id" value="<%= pass_id %>">
+                    <%};%>
 
                     <div class="form-section">
                         <h2 class="section-title">Donation Details</h2>
@@ -568,6 +757,16 @@
                 }, 200);
             });
         }
+
+        // current date
+        (function () {
+            const now = new Date();
+            const date = now.toISOString().slice(0, 10);      // YYYY-MM-DD
+            const time = now.toTimeString().slice(0, 8);      // HH:MM:SS
+
+            document.getElementById('submission_date').value = date;
+            document.getElementById('submitssion_time').value = time;
+        })();
 
         // ---------------- EVENTS PAGE JS ----------------
         if (currentTable === "events") {

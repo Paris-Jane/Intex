@@ -8,7 +8,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Add <%= table_name %> - Ella Rises</title>
+    <title>Edit <%= table_name %> - Ella Rises</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -41,49 +41,44 @@
     <!-- Hero Section -->
     <section class="hero hero-compact">
         <div class="hero-content">
-            <% if (table_name = "survey_results") {
-                %><h1>Edit Survey %></h1>
-            <% }else {
-                %><h1>Edit <%= table_name.charAt(0).toUpperCase() + table_name.slice(1, -1) %></h1>
-            }
-            
-            <p class="hero-subtitle">Fill in the details below to create a new record</p>
+            <h1>Edit <%= table_name.charAt(0).toUpperCase() + table_name.slice(1, -1) %></h1>
+            <p class="hero-subtitle">Fill in the details below to edit a record</p>
         </div>
     </section>
 
     <!--Main Content-->
     <div class="container">
         <div class="add-card">
-            <!-- Add-Participant Form -->
-            <%if (table_name === "participants"){%>
-                <form id="addForm" class="modern-form" method="POST" action="/add/participants">
+            <!-- Edit-Participant Form -->
+            <% if (table_name === "participants") { %>
+                <form id="addForm" class="modern-form" action="/edit/participants/<%= info.participant_id %>" method="POST">
                     
                     <div class="form-section">
                         <h2 class="section-title">Basic Information</h2>
-                        <p class="section-description">Enter the participant's personal details</p>
+                        <p class="section-description">Edit <%= info.participant_first_name %>'s personal details</p>
                         
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">First Name <span class="required">*</span></label>
-                                <input type="text" class="form-input" name="participant_first_name" placeholder="John" required autofocus>
+                                <input type="text" class="form-input" name="participant_first_name" value="<%= info.participant_first_name || '' %>" required autofocus>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label">Last Name <span class="required">*</span></label>
-                                <input type="text" class="form-input" name="participant_last_name" placeholder="Doe" required>
+                                <input type="text" class="form-input" name="participant_last_name" value="<%= info.participant_last_name || '' %>" required>
                             </div>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Username <span class="required">*</span></label>
-                                <input type="text" class="form-input" name="participant_username" placeholder="jdoe" required>
+                                <input type="text" class="form-input" name="participant_username" value="<%= info.participant_username || '' %>" required>
                                 <span class="form-hint">Used for login</span>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label">Password <span class="required">*</span></label>
-                                <input type="password" class="form-input" name="participant_password" placeholder="••••••••" required>
+                                <input type="password" class="form-input" name="participant_password" value="<%= info.participant_password || '' %>" required>
                                 <span class="form-hint">Minimum 8 characters</span>
                             </div>
                         </div>
@@ -92,23 +87,28 @@
                             <label class="form-label">Participant Role <span class="required">*</span></label>
                             <div class="radio-group">
                                 <label class="radio-label">
-                                    <input type="radio" name="participant_role" value="admin" required>
+                                    <input type="radio" name="participant_role" value="admin" 
+                                            <%= info.participant_role === 'admin' ? 'checked' : '' %> required>
                                     <span class="radio-custom"></span>
                                     <span class="radio-text">
                                         <strong>Admin</strong>
                                         <small>Full access to all features</small>
                                     </span>
                                 </label>
+                        
                                 <label class="radio-label">
-                                    <input type="radio" name="participant_role" value="participant" required checked>
+                                    <input type="radio" name="participant_role" value="participant" 
+                                            <%= info.participant_role === 'participant' ? 'checked' : '' %> required>
                                     <span class="radio-custom"></span>
                                     <span class="radio-text">
                                         <strong>Participant</strong>
                                         <small>Standard participant access</small>
                                     </span>
                                 </label>
+                        
                                 <label class="radio-label">
-                                    <input type="radio" name="participant_role" value="donor" required>
+                                    <input type="radio" name="participant_role" value="donor" 
+                                            <%= info.participant_role === 'donor' ? 'checked' : '' %> required>
                                     <span class="radio-custom"></span>
                                     <span class="radio-text">
                                         <strong>Donor</strong>
@@ -116,23 +116,23 @@
                                     </span>
                                 </label>
                             </div>
-                        </div>
+                        </div>                        
                     </div>
 
                     <div class="form-section">
                         <h2 class="section-title">Contact Details</h2>
-                        <p class="section-description">How can we reach this participant?</p>
+                        <p class="section-description">How can we reach <%= info.participant_first_name %>?</p>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Phone Number <span class="required">*</span></label>
-                                <input type="tel" class="form-input" name="participant_phone" placeholder="(123) 456-7890" pattern="[0-9]{10}" required>
+                                <input type="tel" class="form-input" name="participant_phone" value="<%= info.participant_phone || '' %>" required>
                                 <span class="form-hint">10 digits, no formatting</span>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label">Email Address <span class="required">*</span></label>
-                                <input type="email" class="form-input" name="participant_email" placeholder="example@email.com" required>
+                                <input type="email" class="form-input" name="participant_email" value="<%= info.participant_email || '' %>" required>
                             </div>
                         </div>
                     </div>
@@ -144,7 +144,17 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">City <span class="required">*</span></label>
-                                <input list="cities" class="form-input" name="participant_city" placeholder="Select or type city" required>
+                            
+                                <!-- Pre-fills with the participant's city -->
+                                <input 
+                                    list="cities" 
+                                    class="form-input" 
+                                    name="participant_city" 
+                                    placeholder="Select or type city" 
+                                    value="<%= info.participant_city || '' %>" 
+                                    required
+                                >
+                            
                                 <datalist id="cities">
                                     <option value="Bountiful">
                                     <option value="Draper">
@@ -165,39 +175,43 @@
                                     <option value="West Jordan">
                                     <option value="West Valley City">
                                 </datalist>
-                            </div>
+                            </div>                            
 
                             <div class="form-group">
                                 <label class="form-label">Zip Code <span class="required">*</span></label>
-                                <input type="text" class="form-input" name="participant_zip" placeholder="84601" pattern="[0-9]{5}" maxlength="5" required>
+                                <input type="text" class="form-input" name="participant_zip" value="<%= info.participant_zip || '' %>" pattern="[0-9]{5}" maxlength="5" required>
                             </div>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">School or Employer</label>
-                            <input type="text" class="form-input" name="participant_school_or_employer" placeholder="e.g., BYU, Tech Company">
+                            <input type="text" class="form-input" name="participant_school_or_employer" value="<%= info.participant_school_or_employer || '' %>">
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">Date of Birth</label>
-                            <input type="date" class="form-input" name="participant_dob">
+                            <input 
+                                type="date" 
+                                class="form-input" 
+                                name="participant_dob" 
+                                value="<%= info.participant_dob ? (info.participant_dob.toISOString ? info.participant_dob.toISOString().slice(0,10) : info.participant_dob.slice(0,10)) : '' %>">
                         </div>
                         
                         <div class="form-group">
                             <label class="form-label">Field of Interest</label>
                             <div class="radio-group radio-group-inline">
                                 <label class="radio-label">
-                                    <input type="radio" name="participant_field_of_interest" value="STEM">
+                                    <input type="radio" name="participant_field_of_interest" value="STEM" <%= info.participant_field_of_interest === 'STEM' ? 'checked' : '' %>>
                                     <span class="radio-custom"></span>
                                     <span class="radio-text"><strong>STEM</strong></span>
                                 </label>
                                 <label class="radio-label">
-                                    <input type="radio" name="participant_field_of_interest" value="Arts">
+                                    <input type="radio" name="participant_field_of_interest" value="Arts" <%= info.participant_field_of_interest === 'Arts' ? 'checked' : '' %>>
                                     <span class="radio-custom"></span>
                                     <span class="radio-text"><strong>Arts</strong></span>
                                 </label>
                                 <label class="radio-label">
-                                    <input type="radio" name="participant_field_of_interest" value="Both">
+                                    <input type="radio" name="participant_field_of_interest" value="Both" <%= info.participant_field_of_interest === 'Both' ? 'checked' : '' %>>
                                     <span class="radio-custom"></span>
                                     <span class="radio-text"><strong>Both</strong></span>
                                 </label>
@@ -207,13 +221,13 @@
 
                     <div class="form-actions">
                         <a href="/participants" class="btn btn-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-primary">Add Participant</button>
+                        <button type="submit" class="btn btn-primary">Edit Participant</button>
                     </div>
                 </form>
 
-            <!-- Add-Events Form -->
-            <%} else if (table_name === "events"){%>
-                <form id="addForm" class="modern-form" action="/add/events" method="POST">
+            <!-- Edit-Events Form -->
+            <% } else if (table_name === "events") { %>
+                <form id="addForm" class="modern-form" action="/edit/events/<%= info.event_id %>" method="POST">
                     
                     <div class="form-section">
                         <h2 class="section-title">Event Details</h2>
@@ -221,42 +235,51 @@
 
                         <div class="form-group">
                             <label class="form-label">Event Name <span class="required">*</span></label>
-                            <select class="form-select" name="event_id" id="eventSelect" required>
+                            <select class="form-select" name="event_type_id" id="eventSelect" required>
                                 <option value="">Select an Event</option>
-                                <option value="1">Mentor Office Hours</option>
-                                <option value="2">Robotics Lab Saturday</option>
-                                <option value="3">Girls in STEAM Mentoring</option>
-                                <option value="4">Monthly Coding Club</option>
-                                <option value="5">Intro to Painting Class</option>
-                                <option value="6">Data Science Study Group</option>
-                                <option value="7">Leadership Circle Meetup</option>
-                                <option value="8">Web Dev Bootcamp Night</option>
-                                <option value="9">Ella Rises Annual Leadership Conference</option>
-                                <option value="10">Monthly Art Studio Workshop</option>
-                                <option value="11">STEAM Summit & Expo</option>
-                                <option value="12">AI for Beginners Bootcamp</option>
-                                <option value="13">Digital Design Workshop</option>
-                                <option value="14">Community STEM Hackathon</option>
-                                <option value="15">Women in Tech & Art Showcase</option>
+                                <option value="1"  <%= info.event_type_id == 1  || info.event_type_id === '1'  ? 'selected' : '' %>>Mentor Office Hours</option>
+                                <option value="2"  <%= info.event_type_id == 2  || info.event_type_id === '2'  ? 'selected' : '' %>>Robotics Lab Saturday</option>
+                                <option value="3"  <%= info.event_type_id == 3  || info.event_type_id === '3'  ? 'selected' : '' %>>Girls in STEAM Mentoring</option>
+                                <option value="4"  <%= info.event_type_id == 4  || info.event_type_id === '4'  ? 'selected' : '' %>>Monthly Coding Club</option>
+                                <option value="5"  <%= info.event_type_id == 5  || info.event_type_id === '5'  ? 'selected' : '' %>>Intro to Painting Class</option>
+                                <option value="6"  <%= info.event_type_id == 6  || info.event_type_id === '6'  ? 'selected' : '' %>>Data Science Study Group</option>
+                                <option value="7"  <%= info.event_type_id == 7  || info.event_type_id === '7'  ? 'selected' : '' %>>Leadership Circle Meetup</option>
+                                <option value="8"  <%= info.event_type_id == 8  || info.event_type_id === '8'  ? 'selected' : '' %>>Web Dev Bootcamp Night</option>
+                                <option value="9"  <%= info.event_type_id == 9  || info.event_type_id === '9'  ? 'selected' : '' %>>Ella Rises Annual Leadership Conference</option>
+                                <option value="10" <%= info.event_type_id == 10 || info.event_type_id === '10' ? 'selected' : '' %>>Monthly Art Studio Workshop</option>
+                                <option value="11" <%= info.event_type_id == 11 || info.event_type_id === '11' ? 'selected' : '' %>>STEAM Summit & Expo</option>
+                                <option value="12" <%= info.event_type_id == 12 || info.event_type_id === '12' ? 'selected' : '' %>>AI for Beginners Bootcamp</option>
+                                <option value="13" <%= info.event_type_id == 13 || info.event_type_id === '13' ? 'selected' : '' %>>Digital Design Workshop</option>
+                                <option value="14" <%= info.event_type_id == 14 || info.event_type_id === '14' ? 'selected' : '' %>>Community STEM Hackathon</option>
+                                <option value="15" <%= info.event_type_id == 15 || info.event_type_id === '15' ? 'selected' : '' %>>Women in Tech & Art Showcase</option>
                             </select>
-                            <input type="hidden" name="event_name" id="eventNameInput">    
+                            <input type="hidden" name="event_name" id="eventNameInput" value="<%= info.event_name || '' %>">    
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">Location <span class="required">*</span></label>
-                            <input list="locations" class="form-input" name="event_location" placeholder="Select or type location" required>
-                            <datalist id="locations">
-                                <option value="Ella Rises HQ">
-                                <option value="Virtual Zoom">
-                                <option value="Art Studio 2">
-                                <option value="Community Center Room A">
-                                <option value="Local Library">
-                            </datalist>
+                            <select class="form-select" name="event_location" id="locations" required>
+                                <datalist id="">
+                                <option value="">Select a location</option>
+                                <option value="Ella Rises HQ" <%= info.event_location == "Ella Rises HQ" ? 'selected' : '' %>>Ella Rises HQ</option>
+                                <option value="Virtual Zoom" <%= info.event_location == "Virtual Zoom" ? 'selected' : '' %>>Virtual Zoom</option>
+                                <option value="Art Studio 2" <%= info.event_location == "Art Studio 2" ? 'selected' : '' %>>Art Studio 2</option>
+                                <option value="Community Center Room A" <%= info.event_location == "Community Center Room A" ? 'selected' : '' %>>Community Center Room A</option>
+                                <option value="Local Library" <%= info.event_location == "Local Library" ? 'selected' : '' %>>Local Library</option>
+                                </select>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">Event Capacity <span class="required">*</span></label>
-                            <input type="number" class="form-input" name="event_capacity" placeholder="Maximum attendees" min="1" max="500" required>
+                            <input 
+                                type="number" 
+                                class="form-input" 
+                                name="event_capacity" 
+                                placeholder="Maximum attendees" 
+                                min="1" 
+                                max="500" 
+                                value="<%= info.event_capacity || '' %>"
+                                required>
                             <span class="form-hint">Maximum number of participants</span>
                         </div>
                     </div>
@@ -267,18 +290,35 @@
                         
                         <div class="form-group">
                             <label class="form-label">Event Date <span class="required">*</span></label>
-                            <input type="date" class="form-input" name="date" required>
+                            <input 
+                                type="date" 
+                                class="form-input" 
+                                name="event_date" 
+                                value="<%= info.event_date ? (info.date.toISOString ? info.date.toISOString().slice(0,10) : info.date.slice(0,10)) : '' %>" 
+                                required>
                         </div>
 
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Start Time <span class="required">*</span></label>
-                                <input type="time" class="form-input" name="event_start_time" id="startTime" required>
+                                <input 
+                                    type="time" 
+                                    class="form-input" 
+                                    name="event_start_time" 
+                                    id="startTime" 
+                                    value="<%= info.event_start_time ? info.event_start_time.toString().slice(0,5) : '' %>"
+                                    required>
                             </div>
                             
                             <div class="form-group">
                                 <label class="form-label">End Time <span class="required">*</span></label>
-                                <input type="time" class="form-input" name="event_end_time" id="endTime" required>
+                                <input 
+                                    type="time" 
+                                    class="form-input" 
+                                    name="event_end_time" 
+                                    id="endTime" 
+                                    value="<%= info.event_end_time ? info.event_end_time.toString().slice(0,5) : '' %>"
+                                    required>
                             </div>
                         </div>
                     </div>
@@ -290,67 +330,84 @@
                         <div class="form-row">
                             <div class="form-group">
                                 <label class="form-label">Deadline Date <span class="required">*</span></label>
-                                <input type="date" class="form-input" name="event_registration_deadline_date" required>
+                                <input 
+                                    type="date" 
+                                    class="form-input" 
+                                    name="event_registration_deadline_date" 
+                                    value="<%= info.event_registration_deadline_date ? (info.event_registration_deadline_date.toISOString ? info.event_registration_deadline_date.toISOString().slice(0,10) : info.event_registration_deadline_date.slice(0,10)) : '' %>"
+                                    required>
                             </div>
 
                             <div class="form-group">
                                 <label class="form-label">Deadline Time <span class="required">*</span></label>
-                                <input type="time" class="form-input" name="event_registration_deadline_time" required>
+                                <input 
+                                    type="time" 
+                                    class="form-input" 
+                                    name="event_registration_deadline_time" 
+                                    value="<%= info.event_registration_deadline_time ? info.event_registration_deadline_time.toString().slice(0,5) : '' %>"
+                                    required>
                             </div>
                         </div>
                     </div>
 
                     <div class="form-actions">
                         <a href="/events" class="btn btn-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-primary">Add Event</button>
+                        <button type="submit" class="btn btn-primary">Edit Event</button>
                     </div>
                 </form>
 
-            <!-- Add-survey Form -->
-            <%} else if (table_name === "surveys"){%>
-                <form id="addForm" class="modern-form" action="/add/surveys" method="POST">
+            <!-- Edit-Event_registration Form -->
+            <% } else if (table_name === "event_registration") { %>
+                <form id="addForm" class="modern-form" action="/edit/event_registration/<%= info.registration_id %>" method="POST">
                     
                     <div class="form-section">
                         <h2 class="section-title">Participant Information</h2>
-                        <p class="section-description">Who is this survey for?</p>
+                        <p class="section-description">Who is this registration for?</p>
 
                         <div class="form-group">
                             <label class="form-label">Participant ID <span class="required">*</span></label>
-                            <input type="number" class="form-input" name="participant_id" placeholder="Enter participant ID" min="1" required>
+                            <input 
+                                type="number" 
+                                class="form-input" 
+                                name="participant_id" 
+                                placeholder="Enter participant ID" 
+                                min="1"
+                                value="<%= info.participant_id || '' %>"
+                                required>
                             <span class="form-hint">Must be an existing participant</span>
                         </div>
                     </div>
 
                     <div class="form-section">
                         <h2 class="section-title">Event Selection</h2>
-                        <p class="section-description">Select the event this survey relates to</p>
+                        <p class="section-description">Select the event this registered for</p>
 
                         <div class="form-group">
                             <label class="form-label">Event Name <span class="required">*</span></label>
                             <select class="form-select" name="event_name" id="eventSelect" required>
                                 <option value="">Select an Event</option>
-                                <option value="Mentor Office Hours">Mentor Office Hours</option>
-                                <option value="Robotics Lab Saturday">Robotics Lab Saturday</option>
-                                <option value="Girls in STEAM Mentoring">Girls in STEAM Mentoring</option>
-                                <option value="Monthly Coding Club">Monthly Coding Club</option>
-                                <option value="Intro to Painting Class">Intro to Painting Class</option>
-                                <option value="Data Science Study Group">Data Science Study Group</option>
-                                <option value="Leadership Circle Meetup">Leadership Circle Meetup</option>
-                                <option value="Web Dev Bootcamp Night">Web Dev Bootcamp Night</option>
-                                <option value="Ella Rises Annual Leadership Conference">Ella Rises Annual Leadership Conference</option>
-                                <option value="Monthly Art Studio Workshop">Monthly Art Studio Workshop</option>
-                                <option value="STEAM Summit & Expo">STEAM Summit & Expo</option>
-                                <option value="AI for Beginners Bootcamp">AI for Beginners Bootcamp</option>
-                                <option value="Digital Design Workshop">Digital Design Workshop</option>
-                                <option value="Community STEM Hackathon">Community STEM Hackathon</option>
-                                <option value="Women in Tech & Art Showcase">Women in Tech & Art Showcase</option>
+                                <option value="Mentor Office Hours"                      <%= info.event_name === 'Mentor Office Hours' ? 'selected' : '' %>>Mentor Office Hours</option>
+                                <option value="Robotics Lab Saturday"                   <%= info.event_name === 'Robotics Lab Saturday' ? 'selected' : '' %>>Robotics Lab Saturday</option>
+                                <option value="Girls in STEAM Mentoring"                <%= info.event_name === 'Girls in STEAM Mentoring' ? 'selected' : '' %>>Girls in STEAM Mentoring</option>
+                                <option value="Monthly Coding Club"                    <%= info.event_name === 'Monthly Coding Club' ? 'selected' : '' %>>Monthly Coding Club</option>
+                                <option value="Intro to Painting Class"                <%= info.event_name === 'Intro to Painting Class' ? 'selected' : '' %>>Intro to Painting Class</option>
+                                <option value="Data Science Study Group"               <%= info.event_name === 'Data Science Study Group' ? 'selected' : '' %>>Data Science Study Group</option>
+                                <option value="Leadership Circle Meetup"               <%= info.event_name === 'Leadership Circle Meetup' ? 'selected' : '' %>>Leadership Circle Meetup</option>
+                                <option value="Web Dev Bootcamp Night"                 <%= info.event_name === 'Web Dev Bootcamp Night' ? 'selected' : '' %>>Web Dev Bootcamp Night</option>
+                                <option value="Ella Rises Annual Leadership Conference" <%= info.event_name === 'Ella Rises Annual Leadership Conference' ? 'selected' : '' %>>Ella Rises Annual Leadership Conference</option>
+                                <option value="Monthly Art Studio Workshop"            <%= info.event_name === 'Monthly Art Studio Workshop' ? 'selected' : '' %>>Monthly Art Studio Workshop</option>
+                                <option value="STEAM Summit & Expo"                    <%= info.event_name === 'STEAM Summit & Expo' ? 'selected' : '' %>>STEAM Summit & Expo</option>
+                                <option value="AI for Beginners Bootcamp"              <%= info.event_name === 'AI for Beginners Bootcamp' ? 'selected' : '' %>>AI for Beginners Bootcamp</option>
+                                <option value="Digital Design Workshop"                <%= info.event_name === 'Digital Design Workshop' ? 'selected' : '' %>>Digital Design Workshop</option>
+                                <option value="Community STEM Hackathon"               <%= info.event_name === 'Community STEM Hackathon' ? 'selected' : '' %>>Community STEM Hackathon</option>
+                                <option value="Women in Tech & Art Showcase"           <%= info.event_name === 'Women in Tech & Art Showcase' ? 'selected' : '' %>>Women in Tech & Art Showcase</option>
                             </select>
                         </div>
                         
                         <div class="form-group">
                             <label class="form-label">Event Date & Time <span class="required">*</span></label>
-                            <select class="form-select" name="event_id" id="eventInstanceSelect" required disabled>
-                                <option value="">Select an event above first</option>
+                            <select class="form-select" name="event_id" id="eventInstanceSelect" required>
+                                <option value=""><%= info.event_id ? 'Select a Date/Time' : 'Select an event above first' %></option>
                             </select>
                         </div>
                     </div>
@@ -363,7 +420,27 @@
                             <label class="form-label">Status <span class="required">*</span></label>
                             <div class="radio-group">
                                 <label class="radio-label">
-                                    <input type="radio" name="registration_status" value="attended" id="regStatusSelect" required>
+                                    <input 
+                                        type="radio" 
+                                        name="registration_status" 
+                                        value="registered" 
+                                        id="regStatusSelect"
+                                        <%= info.registration_status === 'registered' ? 'checked' : '' %>
+                                        required>
+                                    <span class="radio-custom"></span>
+                                    <span class="radio-text">
+                                        <strong>Registered</strong>
+                                        <small>Participant has registered</small>
+                                    </span>
+                                </label>
+                                <label class="radio-label">
+                                    <input 
+                                        type="radio" 
+                                        name="registration_status" 
+                                        value="attended" 
+                                        id="regStatusSelect"
+                                        <%= info.registration_status === 'attended' ? 'checked' : '' %>
+                                        required>
                                     <span class="radio-custom"></span>
                                     <span class="radio-text">
                                         <strong>Attended</strong>
@@ -371,7 +448,12 @@
                                     </span>
                                 </label>
                                 <label class="radio-label">
-                                    <input type="radio" name="registration_status" value="no-show" required>
+                                    <input 
+                                        type="radio" 
+                                        name="registration_status" 
+                                        value="no-show"
+                                        <%= info.registration_status === 'no-show' ? 'checked' : '' %>
+                                        required>
                                     <span class="radio-custom"></span>
                                     <span class="radio-text">
                                         <strong>No-Show</strong>
@@ -379,7 +461,12 @@
                                     </span>
                                 </label>
                                 <label class="radio-label">
-                                    <input type="radio" name="registration_status" value="cancelled" required>
+                                    <input 
+                                        type="radio" 
+                                        name="registration_status" 
+                                        value="cancelled"
+                                        <%= info.registration_status === 'cancelled' ? 'checked' : '' %>
+                                        required>
                                     <span class="radio-custom"></span>
                                     <span class="radio-text">
                                         <strong>Cancelled</strong>
@@ -387,19 +474,25 @@
                                     </span>
                                 </label>
                             </div>
-                            <input type="hidden" name="registration_attend_status" id="attendStatusHidden" value="">
+                            <input 
+                                type="hidden" 
+                                name="registration_attend_status" 
+                                id="attendStatusHidden" 
+                                value="<%= typeof info.registration_attend_status !== 'undefined' 
+                                            ? info.registration_attend_status 
+                                            : (info.registration_status === 'attended' ? 1 : 0) %>">
                         </div>
                     </div>
 
                     <div class="form-actions">
-                        <a href="/surveys" class="btn btn-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-primary">Add Survey Response</button>
+                        <a href="/event_registration" class="btn btn-secondary">Cancel</a>
+                        <button type="submit" class="btn btn-primary">Edit Event Registration</button>
                     </div>
                 </form>
 
-            <!-- Add-milestones Form -->
-            <%} else if (table_name === "milestones"){%>
-                <form id="addForm" class="modern-form" action="/add/milestones" method="POST">
+            <!-- Edit-milestones Form -->
+            <% } else if (table_name === "milestones") { %>
+                <form id="addForm" class="modern-form" action="/edit/milestones/<%= info.milestone_id %>" method="POST">
                     
                     <div class="form-section">
                         <h2 class="section-title">Participant Information</h2>
@@ -407,7 +500,14 @@
 
                         <div class="form-group">
                             <label class="form-label">Participant ID <span class="required">*</span></label>
-                            <input type="number" class="form-input" name="participant_id" placeholder="Enter participant ID" min="1" required>
+                            <input 
+                                type="number" 
+                                class="form-input" 
+                                name="participant_id" 
+                                placeholder="Enter participant ID" 
+                                min="1"
+                                value="<%= info.participant_id || '' %>"
+                                required>
                             <span class="form-hint">Must be an existing participant</span>
                         </div>
                     </div>
@@ -418,14 +518,25 @@
 
                         <div class="form-group">
                             <label class="form-label">Milestone Title <span class="required">*</span></label>
-                            <input type="text" class="form-input" name="milestone_title" placeholder="e.g., Graduated with BS in Computer Science" required>
+                            <input 
+                                type="text" 
+                                class="form-input" 
+                                name="milestone_title" 
+                                placeholder="e.g., Graduated with BS in Computer Science" 
+                                value="<%= info.milestone_title || '' %>"
+                                required>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">Milestone Category <span class="required">*</span></label>
                             <div class="radio-group">
                                 <label class="radio-label">
-                                    <input type="radio" name="milestone_category" value="secondary" required>
+                                    <input 
+                                        type="radio" 
+                                        name="milestone_category" 
+                                        value="secondary"
+                                        <%= info.milestone_category === 'secondary' ? 'checked' : '' %>
+                                        required>
                                     <span class="radio-custom"></span>
                                     <span class="radio-text">
                                         <strong>Secondary</strong>
@@ -433,7 +544,12 @@
                                     </span>
                                 </label>
                                 <label class="radio-label">
-                                    <input type="radio" name="milestone_category" value="undergraduate" required>
+                                    <input 
+                                        type="radio" 
+                                        name="milestone_category" 
+                                        value="undergraduate"
+                                        <%= info.milestone_category === 'undergraduate' ? 'checked' : '' %>
+                                        required>
                                     <span class="radio-custom"></span>
                                     <span class="radio-text">
                                         <strong>Undergraduate</strong>
@@ -441,7 +557,12 @@
                                     </span>
                                 </label>
                                 <label class="radio-label">
-                                    <input type="radio" name="milestone_category" value="graduate" required>
+                                    <input 
+                                        type="radio" 
+                                        name="milestone_category" 
+                                        value="graduate"
+                                        <%= info.milestone_category === 'graduate' ? 'checked' : '' %>
+                                        required>
                                     <span class="radio-custom"></span>
                                     <span class="radio-text">
                                         <strong>Graduate</strong>
@@ -449,7 +570,12 @@
                                     </span>
                                 </label>
                                 <label class="radio-label">
-                                    <input type="radio" name="milestone_category" value="professional" required>
+                                    <input 
+                                        type="radio" 
+                                        name="milestone_category" 
+                                        value="professional"
+                                        <%= info.milestone_category === 'professional' ? 'checked' : '' %>
+                                        required>
                                     <span class="radio-custom"></span>
                                     <span class="radio-text">
                                         <strong>Professional</strong>
@@ -457,7 +583,12 @@
                                     </span>
                                 </label>
                                 <label class="radio-label">
-                                    <input type="radio" name="milestone_category" value="enrichment" required>
+                                    <input 
+                                        type="radio" 
+                                        name="milestone_category" 
+                                        value="enrichment"
+                                        <%= info.milestone_category === 'enrichment' ? 'checked' : '' %>
+                                        required>
                                     <span class="radio-custom"></span>
                                     <span class="radio-text">
                                         <strong>Enrichment</strong>
@@ -465,7 +596,12 @@
                                     </span>
                                 </label>
                                 <label class="radio-label">
-                                    <input type="radio" name="milestone_category" value="certificate" required>
+                                    <input 
+                                        type="radio" 
+                                        name="milestone_category" 
+                                        value="certificate"
+                                        <%= info.milestone_category === 'certificate' ? 'checked' : '' %>
+                                        required>
                                     <span class="radio-custom"></span>
                                     <span class="radio-text">
                                         <strong>Certificate Programs</strong>
@@ -477,19 +613,24 @@
 
                         <div class="form-group">
                             <label class="form-label">Milestone Date <span class="required">*</span></label>
-                            <input type="date" class="form-input" name="milestone_date" required>
+                            <input 
+                                type="date" 
+                                class="form-input" 
+                                name="milestone_date"
+                                value="<%= info.milestone_date ? (info.milestone_date.toISOString ? info.milestone_date.toISOString().slice(0,10) : info.milestone_date.slice(0,10)) : '' %>"
+                                required>
                         </div>
                     </div>
 
                     <div class="form-actions">
                         <a href="/milestones" class="btn btn-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-primary">Add Milestone</button>
+                        <button type="submit" class="btn btn-primary">Edit Milestone</button>
                     </div>
                 </form>
 
-            <!--Add Donations Form-->
-            <%} else if (table_name === "donations"){%>
-                <form id="addForm" class="modern-form" action="/add/donations" method="POST">
+            <!-- Edit Donations Form -->
+            <% } else if (table_name === "donations") { %>
+                <form id="addForm" class="modern-form" action="/edit/donations/<%= info.donation_id %>" method="POST">
                     
                     <div class="form-section">
                         <h2 class="section-title">Donor Information</h2>
@@ -497,7 +638,14 @@
 
                         <div class="form-group">
                             <label class="form-label">Participant ID <span class="required">*</span></label>
-                            <input type="number" class="form-input" name="participant_id" placeholder="Enter participant ID" min="1" required>
+                            <input 
+                                type="number" 
+                                class="form-input" 
+                                name="participant_id" 
+                                placeholder="Enter participant ID" 
+                                min="1"
+                                value="<%= info.participant_id || '' %>"
+                                required>
                             <span class="form-hint">Must be an existing participant</span>
                         </div>
                     </div>
@@ -508,14 +656,27 @@
 
                         <div class="form-group">
                             <label class="form-label">Donation Date <span class="required">*</span></label>
-                            <input type="date" class="form-input" name="donation_date" required>
+                            <input 
+                                type="date" 
+                                class="form-input" 
+                                name="donation_date"
+                                value="<%= info.donation_date ? (info.donation_date.toISOString ? info.donation_date.toISOString().slice(0,10) : info.donation_date.slice(0,10)) : '' %>"
+                                required>
                         </div>
 
                         <div class="form-group">
                             <label class="form-label">Donation Amount <span class="required">*</span></label>
                             <div class="input-with-prefix">
                                 <span class="input-prefix">$</span>
-                                <input type="number" class="form-input form-input-with-prefix" name="donation_amount" placeholder="0.00" min="0.01" step="0.01" required>
+                                <input 
+                                    type="number" 
+                                    class="form-input form-input-with-prefix" 
+                                    name="donation_amount" 
+                                    placeholder="0.00" 
+                                    min="0.01" 
+                                    step="0.01"
+                                    value="<%= info.donation_amount || '' %>"
+                                    required>
                             </div>
                             <span class="form-hint">Enter amount in USD</span>
                         </div>
@@ -523,16 +684,16 @@
 
                     <div class="form-actions">
                         <a href="/donations" class="btn btn-secondary">Cancel</a>
-                        <button type="submit" class="btn btn-primary">Add Donation</button>
+                        <button type="submit" class="btn btn-primary">Edit Donation</button>
                     </div>
                 </form>
-            <%} else { %>
+            <% } else { %>
                 <div class="empty-state">
                     <h2>No Form Available</h2>
                     <p>The requested form type is not available.</p>
                     <a href="/" class="btn btn-primary">Return Home</a>
                 </div>
-            <%}%>
+            <% } %>
         </div>
     </div>
 
@@ -580,6 +741,11 @@
             const eventNameInput = document.getElementById('eventNameInput');
 
             if (select && eventNameInput) {
+                // Set initial hidden value based on selected option (for edit)
+                if (!eventNameInput.value && select.selectedIndex > 0) {
+                    eventNameInput.value = select.options[select.selectedIndex].text;
+                }
+
                 select.addEventListener('change', () => {
                     const selectedOption = select.options[select.selectedIndex];
                     eventNameInput.value = selectedOption.text;
@@ -609,18 +775,30 @@
 
         // ---------------- SURVEYS PAGE JS ----------------
         if (currentTable === "surveys") {
+            const existingSurvey = JSON.stringify(info || {});
+            const allEvents = JSON.stringify(typeof events !== 'undefined' ? (events || []) : []);
+
             const regInputs = document.querySelectorAll('input[name="registration_status"]');
             const hiddenAttend = document.getElementById("attendStatusHidden");
 
             if (regInputs && hiddenAttend) {
                 regInputs.forEach(input => {
+                    // Pre-select based on existing status
+                    if (existingSurvey.registration_status && input.value === existingSurvey.registration_status) {
+                        input.checked = true;
+                        hiddenAttend.value = (existingSurvey.registration_status === "attended") ? 1 : 0;
+                    }
+
                     input.addEventListener("change", () => {
                         hiddenAttend.value = (input.value === "attended") ? 1 : 0;
                     });
                 });
+
+                if (!hiddenAttend.value && existingSurvey.registration_status) {
+                    hiddenAttend.value = (existingSurvey.registration_status === "attended") ? 1 : 0;
+                }
             }
 
-            const allEvents =  JSON.stringify(events || [])
             const eventSelectSurvey = document.getElementById("eventSelect");
             const eventInstanceSelect = document.getElementById("eventInstanceSelect");
 
@@ -634,44 +812,56 @@
                 return label;
             }
 
+            function populateEventInstances(selectedName, preselectedId) {
+                eventInstanceSelect.innerHTML = "";
+                eventInstanceSelect.disabled = true;
+
+                if (!selectedName) {
+                    const opt = document.createElement("option");
+                    opt.value = "";
+                    opt.textContent = "Select an event above first";
+                    eventInstanceSelect.appendChild(opt);
+                    return;
+                }
+
+                const matchingEvents = allEvents.filter(ev => ev.event_name === selectedName);
+
+                if (matchingEvents.length === 0) {
+                    const opt = document.createElement("option");
+                    opt.value = "";
+                    opt.textContent = "No dates found for this event";
+                    eventInstanceSelect.appendChild(opt);
+                    return;
+                }
+
+                const defaultOpt = document.createElement("option");
+                defaultOpt.value = "";
+                defaultOpt.textContent = "Select a Date/Time";
+                eventInstanceSelect.appendChild(defaultOpt);
+
+                matchingEvents.forEach(ev => {
+                    const opt = document.createElement("option");
+                    opt.value = ev.event_id;
+                    opt.textContent = formatEventOption(ev);
+                    if (preselectedId && String(preselectedId) === String(ev.event_id)) {
+                        opt.selected = true;
+                    }
+                    eventInstanceSelect.appendChild(opt);
+                });
+
+                eventInstanceSelect.disabled = false;
+            }
+
             if (eventSelectSurvey && eventInstanceSelect) {
+                // Pre-select existing event + instance on edit
+                if (existingSurvey.event_name) {
+                    eventSelectSurvey.value = existingSurvey.event_name;
+                    populateEventInstances(existingSurvey.event_name, existingSurvey.event_id);
+                }
+
                 eventSelectSurvey.addEventListener("change", () => {
                     const selectedName = eventSelectSurvey.value;
-
-                    eventInstanceSelect.innerHTML = "";
-                    eventInstanceSelect.disabled = true;
-
-                    if (!selectedName) {
-                        const opt = document.createElement("option");
-                        opt.value = "";
-                        opt.textContent = "Select an event above first";
-                        eventInstanceSelect.appendChild(opt);
-                        return;
-                    }
-
-                    const matchingEvents = allEvents.filter(ev => ev.event_name === selectedName);
-
-                    if (matchingEvents.length === 0) {
-                        const opt = document.createElement("option");
-                        opt.value = "";
-                        opt.textContent = "No dates found for this event";
-                        eventInstanceSelect.appendChild(opt);
-                        return;
-                    }
-
-                    const defaultOpt = document.createElement("option");
-                    defaultOpt.value = "";
-                    defaultOpt.textContent = "Select a Date/Time";
-                    eventInstanceSelect.appendChild(defaultOpt);
-
-                    matchingEvents.forEach(ev => {
-                        const opt = document.createElement("option");
-                        opt.value = ev.event_id;
-                        opt.textContent = formatEventOption(ev);
-                        eventInstanceSelect.appendChild(opt);
-                    });
-
-                    eventInstanceSelect.disabled = false;
+                    populateEventInstances(selectedName, null);
                 });
             }
         }
