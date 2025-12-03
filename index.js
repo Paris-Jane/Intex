@@ -455,39 +455,69 @@
     });
 
 // ADD ENTRY PAGE:
+    // route to display the "add ____" page
     app.get('/add/:table', async (req, res) => {
-        const table_name = req.params.table;
-        let events = [];
+        const table_name = req.params.table; 
+        let events = []; // Needed for the "Add Survey" functionality. Passes along an empty table if the database is not survey_results
         
         if (table_name === "survey_results") {
-            events = await knex("events")
+            events = await knex("events") // gathere needed inputs to make it so in the "add survey" page, the user can select an event and it will display the times the event is avaliable
                 .select("event_id", "event_name", "event_date", "event_start_time", "event_end_time")
                 .orderBy(["event_name", "event_date", "event_start_time"]);
         }
         
         res.render("add", { table_name, events });
+    });
+        
+    // Route to add the form inputs into the database (for all "add" pages)
+    app.post("/add/:table", async (req, res) => {
+            const table_name = req.params.table;
+        
+            const primaryKeyByTable = {
+                participants: "participant_id",
+                milestones: "milestone_id",
+                events: "event_id",
+                survey_results: "survey_id",
+                donations: "donation_id"
+            };
+        
+            const primaryKey = primaryKeyByTable[table_name];
+        
+            const newData = req.body;
+        
+            knex(table_name)
+                .insert(newData)
+                .then(() => {
+                    res.redirect(`/${table_name}`,{
+                        message: "Added Sucessfully!",
+                        messageType: "success"
+                    });
+                })
+                .catch(err => {
+                    console.log("Error adding record:", err.message);
+                    res.status(500).json({ error: err.message });
+                });
         });
+
+
+        // // NOTE: This is still a simple placeholder; update later to match your add.ejs form and real columns
+        // const { event_name, event_id /* plus any other survey fields */ } = req.body;
         
-        // ADD SURVEY (INSERT INTO survey_results)
-        app.post("/add/survey", async (req, res) => {
-        // NOTE: This is still a simple placeholder; update later to match your add.ejs form and real columns
-        const { event_name, event_id /* plus any other survey fields */ } = req.body;
+        // try {
+        //     await knex("survey_results").insert({
+        //         event_name: event_name, // adjust to real column names when wiring form
+        //         event_id: event_id
+        //         // other survey columns here...
+        //     });
         
-        try {
-            await knex("survey_results").insert({
-                event_name: event_name, // adjust to real column names when wiring form
-                event_id: event_id
-                // other survey columns here...
-            });
+        // res.redirect("/surveys");
+        // } catch (err) {
+        //     console.error("Error inserting survey:", err);
+        //     res.status(500).send("Error saving survey");
+        // }
+        // });
         
-        res.redirect("/surveys");
-        } catch (err) {
-        console.error("Error inserting survey:", err);
-        res.status(500).send("Error saving survey");
-        }
-        });
-        
-        // DELETE FUNCTIONALITY:
+// DELETE FUNCTIONALITY:
         // Map tables to primary key columns
         const deleteConfig = {
         participants: "participant_id",
