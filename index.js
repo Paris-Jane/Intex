@@ -62,7 +62,7 @@
     // Global authentication middleware - runs on EVERY request (Needed for login functionality)
     app.use((req, res, next) => {
         // Skip authentication for specific login routes
-        if (req.path === '/' || req.path === '/index' || req.path === '/about' || req.path === '/performance' || req.path === '/calender' || req.path === '/donate_now' || req.path === '/login' || req.path === '/logout') {
+        if (req.path === '/' || req.path === '/index' || req.path === '/about' || req.path === '/performance' || req.path === '/calendar' || req.path === '/donate_now' || req.path === '/login' || req.path === '/logout') {
             //continue with the request path
             return next();
         }
@@ -75,6 +75,7 @@
             res.render("login", { error_message: "Please log in to access this page" });
         }
     });
+
 /* ROUTES */
 // HOME PAGE: general landing page that displays information about the company
     app.get("/", (req, res) => {
