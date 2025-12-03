@@ -74,10 +74,11 @@
             <div class="table-header">
                 <h2 class="table-title">Ella Rises Participants</h2>
                 <div class="table-actions">
-                    <!--UPDATE LATER: only display "Add" button if user is level Manager-->
-                    <button class="btn btn-add">
-                        <a href="/add/participants">+ Add Participant</a>
-                    </button>
+                    <% if (isLoggedIn && role && role.toLowerCase() === 'admin') { %>
+                        <button class="btn btn-add">
+                            <a href="/add/participants">+ Add Participant</a>
+                        </button>
+                    <% } %>
                 </div>
             </div>
 
@@ -88,17 +89,17 @@
                         <!-- Search Dropdown -->
                         <div class="filter-item filter-column">
                             <select name="searchColumn" id="searchColumn" class="form-control">
-                                <option value="full_name" <%= (!filters.searchColumn || filters.searchColumn === 'full_name') ? 'selected' : '' %>>Full Name</option>
-                                <option value="participant_first_name" <%= (filters.searchColumn === 'participant_first_name') ? 'selected' : '' %>>First Name</option>
-                                <option value="participant_last_name" <%= filters.searchColumn === 'participant_last_name' ? 'selected' : '' %>>Last Name</option>
-                                <option value="participant_username" <%= filters.searchColumn === 'participant_username' ? 'selected' : '' %>>Username</option>
-                                <option value="participant_email" <%= filters.searchColumn === 'participant_email' ? 'selected' : '' %>>Email</option>
-                                <option value="participant_phone" <%= filters.searchColumn === 'participant_phone' ? 'selected' : '' %>>Phone</option>
-                                <option value="participant_city" <%= filters.searchColumn === 'participant_city' ? 'selected' : '' %>>City</option>
-                                <option value="participant_state" <%= filters.searchColumn === 'participant_state' ? 'selected' : '' %>>State</option>
-                                <option value="participant_school_or_employer" <%= filters.searchColumn === 'participant_school_or_employer' ? 'selected' : '' %>>School/Employer</option>
-                                <option value="participant_field_of_interest" <%= filters.searchColumn === 'participant_field_of_interest' ? 'selected' : '' %>>Field of Interest</option>
-                                <option value="total_donations" <%= filters.searchColumn === 'total_donations' ? 'selected' : '' %>>Total Donations</option>
+                                <option value="full_name"<% if (!filters.searchColumn || filters.searchColumn === 'full_name') { %> selected<% } %>>Full Name</option>
+                                <option value="participant_first_name"<% if (filters.searchColumn === 'participant_first_name') { %> selected<% } %>>First Name</option>
+                                <option value="participant_last_name"<% if (filters.searchColumn === 'participant_last_name') { %> selected<% } %>>Last Name</option>
+                                <option value="participant_username"<% if (filters.searchColumn === 'participant_username') { %> selected<% } %>>Username</option>
+                                <option value="participant_email"<% if (filters.searchColumn === 'participant_email') { %> selected<% } %>>Email</option>
+                                <option value="participant_phone"<% if (filters.searchColumn === 'participant_phone') { %> selected<% } %>>Phone</option>
+                                <option value="participant_city"<% if (filters.searchColumn === 'participant_city') { %> selected<% } %>>City</option>
+                                <option value="participant_state"<% if (filters.searchColumn === 'participant_state') { %> selected<% } %>>State</option>
+                                <option value="participant_school_or_employer"<% if (filters.searchColumn === 'participant_school_or_employer') { %> selected<% } %>>School/Employer</option>
+                                <option value="participant_field_of_interest"<% if (filters.searchColumn === 'participant_field_of_interest') { %> selected<% } %>>Field of Interest</option>
+                                <option value="total_donations"<% if (filters.searchColumn === 'total_donations') { %> selected<% } %>>Total Donations</option>
                             </select>                            
                         </div>
 
@@ -317,8 +318,8 @@
             </div>
 
             <!-- Bulk Actions Bar -->
-            <!--UPDATE LATER: only display if user level admin/manager-->
-            <div id="bulkActionsBar" style="display: none; background-color: #f8f0f0; padding: 1rem 1.5rem; border-bottom: 1px solid #e0e0e0;">
+            <% if (isLoggedIn && role && role.toLowerCase() === 'admin') { %>
+                <div id="bulkActionsBar" style="display: none; background-color: #f8f0f0; padding: 1rem 1.5rem; border-bottom: 1px solid #e0e0e0;">
                 <div class="flex-between">
                     <div>
                         <span id="selectedCount" style="font-weight: 600; color: #666;">0 selected</span>
@@ -337,8 +338,9 @@
                 <table>
                     <thead>
                         <tr>
-                            <!--UPDATE LATER: only display checkbox (only next row) if user is admin-->
+                            <% if (isLoggedIn && role && role.toLowerCase() === 'admin') { %>
                             <th style="width: 40px;"><input type="checkbox" id="selectAll"></th>
+                            <% } %>
                             <th class="sortable" data-column="participant_first_name">First Name <span class="sort-icon">⇅</span></th>
                             <th class="sortable" data-column="participant_last_name">Last Name <span class="sort-icon">⇅</span></th>
                             <th class="sortable" data-column="participant_username">Username <span class="sort-icon">⇅</span></th>
@@ -367,8 +369,9 @@
                                     }
                                 %>
                                 <tr>
-                                    <!--UPDATE LATER: only display checkbox (only next row) if user is admin-->
+                                    <% if (isLoggedIn && role && role.toLowerCase() === 'admin') { %>
                                     <td><input type="checkbox" class="row-checkbox" value="<%= p.participant_id %>" data-name="<%= p.participant_first_name %> <%= p.participant_last_name %>"></td>
+                                    <% } %>
                                     <!--FORMAT LINK CHANGE-->
                                     <td><a href="/profile/<%= p.participant_id%>" style="color: var(--primary); text-decoration: underline; font-weight: 600;"><%= p.participant_first_name %></a></td>
                                     <td><a href="/profile/<%= p.participant_id%>" style="color: var(--primary); text-decoration: underline; font-weight: 600;"><%= p.participant_last_name %></a></td>
@@ -386,8 +389,7 @@
                             <% }); %>
                         <% } else { %>
                             <tr>
-                                <td colspan="13" style="text-align: center; padding: 3rem; color: #999;">
-                                    No participants found. Click "Add Participant" to get started.
+                                <td colspan="<%= (isLoggedIn && role && role.toLowerCase() === 'admin') ? '13' : '12' %>" style="text-align: center; padding: 3rem; color: #999;">                                    No participants found. Click "Add Participant" to get started.
                                 </td>
                             </tr>
                         <% } %>
