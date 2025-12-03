@@ -268,18 +268,78 @@
                 Thank you to our supporters who make it possible for us to accomplish
                 our goals and provide these wonderful programs for our young women!
             </p>
-            <div id="google_translate_element"></div>
-
+            
+            <!--Google Translate-->
+            <div class="custom-language-selector">
+                <button class="language-dropdown-btn" onclick="toggleLanguageDropdown()">
+                    <span id="currentLanguage">🌐 English</span>
+                    <span class="dropdown-arrow">▾</span>
+                </button>
+                <div class="language-dropdown-menu" id="languageDropdown">
+                    <a href="#" onclick="changeLanguage('en'); return false;">English</a>
+                    <a href="#" onclick="changeLanguage('es'); return false;">Español</a>
+                    <a href="#" onclick="changeLanguage('fr'); return false;">Français</a>
+                    <a href="#" onclick="changeLanguage('de'); return false;">Deutsch</a>
+                    <a href="#" onclick="changeLanguage('pt'); return false;">Português</a>
+                    <a href="#" onclick="changeLanguage('ar'); return false;">العربية</a>
+                    <a href="#" onclick="changeLanguage('zh-CN'); return false;">中文</a>
+                    <a href="#" onclick="changeLanguage('ja'); return false;">日本語</a>
+                    <a href="#" onclick="changeLanguage('ko'); return false;">한국어</a>
+                </div>
+            </div>
+            
+            <!-- Hidden Google Translate Element -->
+            <div id="google_translate_element" style="display: none;"></div>
+            
             <script type="text/javascript">
             function googleTranslateElementInit() {
-            new google.translate.TranslateElement(
-                {pageLanguage: 'en', includedLanguages: 'es,fr,de,pt,ar,zh-CN,ja,ko'},
-                'google_translate_element'
-            );
+                new google.translate.TranslateElement({
+                    pageLanguage: 'en',
+                    includedLanguages: 'en,es,fr,de,pt,ar,zh-CN,ja,ko',
+                    autoDisplay: false
+                }, 'google_translate_element');
+            }
+            
+            function changeLanguage(lang) {
+                const selectField = document.querySelector('.goog-te-combo');
+                if (selectField) {
+                    selectField.value = lang;
+                    selectField.dispatchEvent(new Event('change'));
+                    
+                    // Update button text
+                    const languageNames = {
+                        'en': '🌐 English',
+                        'es': '🌐 Español',
+                        'fr': '🌐 Français',
+                        'de': '🌐 Deutsch',
+                        'pt': '🌐 Português',
+                        'ar': '🌐 العربية',
+                        'zh-CN': '🌐 中文',
+                        'ja': '🌐 日本語',
+                        'ko': '🌐 한국어'
+                    };
+                    document.getElementById('currentLanguage').textContent = languageNames[lang] || '🌐 English';
+                }
+                toggleLanguageDropdown();
+            }
+            
+            function toggleLanguageDropdown() {
+                const dropdown = document.getElementById('languageDropdown');
+                dropdown.classList.toggle('show');
+            }
+            
+            // Close dropdown when clicking outside
+            window.onclick = function(event) {
+                if (!event.target.matches('.language-dropdown-btn') && !event.target.matches('.language-dropdown-btn *')) {
+                    const dropdowns = document.getElementsByClassName('language-dropdown-menu');
+                    for (let i = 0; i < dropdowns.length; i++) {
+                        dropdowns[i].classList.remove('show');
+                    }
+                }
             }
             </script>
-
-            <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+            
+            <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>            
         </footer>
 
         <script>

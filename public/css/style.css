@@ -2101,20 +2101,20 @@ footer .footer-subtext {
 
 /* Today's Date */
 .calendar-day-today {
-  border: 3px solid var(--sage);
-  background-color: var(--cream);
+  border: 2px solid var(--powder-blue);
+  background-color: #edf4f4;
 }
 
 .calendar-day-today .calendar-day-number {
-  color: var(--sage);
+  color: var(--text-dark);
   font-weight: 700;
   font-size: 0.9rem;
 }
 
 /* Days with Events */
 .calendar-day-has-events {
-  background-color: #f5f5f5;
-  border-color: var(--text-light);
+  background-color: #fbf8f1;
+  border-color: var(--blush-light);
 }
 
 .calendar-day-has-events:hover {
@@ -2574,5 +2574,110 @@ footer .footer-subtext {
   .calendar-legend-title {
       margin-right: 0;
       margin-bottom: 0.5rem;
+  }
+}
+
+/* ============================================
+   GOOGLE TRANSLATE WIDGET STYLING
+   ============================================ */
+
+/* Hide the Google Translate banner at top */
+.goog-te-banner-frame.skiptranslate {
+  display: none !important;
+}
+
+body {
+  top: 0px !important;
+}
+
+/* Custom Language Selector */
+.custom-language-selector {
+  position: relative;
+  display: inline-block;
+}
+
+.language-dropdown-btn {
+  background-color: white;
+  border: 2px solid var(--powder-blue);
+  border-radius: 25px;
+  padding: 0.6rem 1.5rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-body);
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.language-dropdown-btn:hover {
+  background-color: var(--powder-blue);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(153, 183, 198, 0.3);
+}
+
+.dropdown-arrow {
+  font-size: 0.8rem;
+}
+
+.language-dropdown-menu {
+  display: none;
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 0.5rem;
+  background-color: white;
+  min-width: 200px;
+  box-shadow: 0 8px 24px rgba(58, 63, 59, 0.15);
+  border-radius: 12px;
+  border: 2px solid var(--border-color);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.language-dropdown-menu.show {
+  display: block;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+      opacity: 0;
+      transform: translateY(10px);
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+
+.language-dropdown-menu a {
+  display: block;
+  padding: 0.75rem 1.25rem;
+  color: var(--text-dark);
+  text-decoration: none;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+
+.language-dropdown-menu a:hover {
+  background-color: var(--cream);
+  color: var(--powder-blue);
+  padding-left: 1.5rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .language-dropdown-btn {
+      padding: 0.5rem 1.2rem;
+      font-size: 0.85rem;
+  }
+  
+  .language-dropdown-menu {
+      min-width: 180px;
   }
 }
