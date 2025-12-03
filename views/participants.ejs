@@ -20,7 +20,7 @@
                 <li><a href="/">Home</a></li>
                 <li><a href="/about">About</a></li>
                 <li><a href="/donate_now">Donate Now</a></li>
-                <!--UPDATE LATER: make it so it will only display dropdown if user is logged in-->
+                <!--UPDATE LATER: make it so it will only display dropdown if user is logged in and has roles Admin/sponsor-->
                 <li class="dropdown">
                     <span class="dropdown-toggle">
                         <a href="#" class="selected-nav">Pages ▾</a>
@@ -43,7 +43,7 @@
     <!-- Hero Section -->
     <section class="hero">
         <div class="hero-content">
-            <h1>Participants</h1>
+            <h1>Participant List</h1>
             <p>Manage and view all participant information</p>
         </div>
     </section>
@@ -354,7 +354,6 @@
                                     }
                                 %>
                                 <tr>
-                                    <!-- Use primary key as value for delete/edit -->
                                     <!--UPDATE LATER: only display checkbox (only next row) if user is admin-->
                                     <td><input type="checkbox" class="row-checkbox" value="<%= p.participant_id %>" data-name="<%= p.participant_first_name %> <%= p.participant_last_name %>"></td>
                                     <td><%= p.participant_first_name %></td>
@@ -616,12 +615,13 @@
             const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
             const ids = Array.from(checkedBoxes).map(cb => cb.value);
             const count = ids.length;
-            
+
             if (count === 0) return;
 
             let confirmMessage;
-            let finalMessage; // <- message we will show AFTER redirect
+            let finalMessage;
 
+            // Create messages to ask users if they would like to delete (if it is more than one just say number of participants)
             if (count === 1) {
                 const name = checkedBoxes[0].getAttribute('data-name');
                 confirmMessage = `Are you sure you want to delete ${name}?`;
@@ -630,35 +630,43 @@
                 confirmMessage = `Are you sure you want to delete ${count} participants?`;
                 finalMessage = `${count} participants deleted`;
             }
-            
-            showDeleteConfirmation(confirmMessage, function() {
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = '/delete-multiple';
 
-                // table name (generic delete route needs this)
-                const tableInput = document.createElement('input');
-                tableInput.type = 'hidden';
-                tableInput.name = 'table';
-                tableInput.value = 'participants';  // change per page (events, surveys, etc.)
-                form.appendChild(tableInput);
+            showDeleteConfirmation(confirmMessage, async function() {
+                const table = 'participants'; // hardcoded per page
 
-                // IDs being deleted
-                const idsInput = document.createElement('input');
-                idsInput.type = 'hidden';
-                idsInput.name = 'ids';
-                idsInput.value = JSON.stringify(ids);
-                form.appendChild(idsInput);
+                try {
+                    // Call /delete/:table/:id for each selected id
+                    const responses = await Promise.all(
+                        ids.map(id =>
+                            fetch(`/delete/${table}/${id}`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Accept': 'application/json'
+                                },
+                                body: JSON.stringify({}) // body not used by route, can be empty
+                            })
+                        )
+                    );
 
-                // Human-friendly message to show after redirect
-                const msgInput = document.createElement('input');
-                msgInput.type = 'hidden';
-                msgInput.name = 'message';
-                msgInput.value = finalMessage;
-                form.appendChild(msgInput);
+                    const allOk = responses.every(r => r.ok);
 
-                document.body.appendChild(form);
-                form.submit();
+                    if (!allOk) {
+                        console.error('Some delete requests failed:', responses);
+                        alert('Some participants could not be deleted. Please check the console for details.');
+                        return;
+                    }
+
+                    const message = encodeURIComponent(finalMessage);
+                    const messageType = 'success';
+
+                    window.location.href = `/participants?message=${message}&messageType=${messageType}`;
+
+
+                } catch (err) {
+                    console.error('Error deleting participants:', err);
+                    alert('There was an error deleting participants. Please try again.');
+                }
             });
         });
 

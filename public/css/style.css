@@ -880,6 +880,87 @@ tbody tr:hover {
   gap: 0.5rem;
 }
 
+/* Selected row styling */
+tbody tr:has(.row-checkbox:checked) {
+  background-color: rgba(249, 175, 177, 0.2) !important;
+}
+
+tbody tr:has(.row-checkbox:checked):hover {
+  background-color: rgba(249, 175, 177, 0.3) !important;
+}
+
+
+
+/* Table will try to fit all columns, shrinking as needed */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: auto; /* Allow columns to shrink naturally */
+}
+
+/* Ensure table wrapper is scrollable */
+.table-container > div:last-child {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+/* Headers: minimum width is the content width (no arbitrary min-width) */
+th {
+  padding: 1.2rem;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-medium);
+  border-bottom: 2px solid var(--border-color);
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background-color: #d5e1e8;
+  white-space: nowrap; /* Prevent text wrapping in headers */
+}
+
+/* Table cells: will wrap text if column shrinks below header width */
+td {
+  padding: 1.2rem;
+  border-bottom: 1px solid #f5f0ea;
+  white-space: normal; /* Allow text wrapping in cells */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 0; /* Forces columns to respect table-layout and shrink */
+}
+
+/* Checkbox column should stay minimal */
+th:first-child,
+td:first-child {
+  width: 40px;
+  min-width: 40px;
+  max-width: 40px;
+  padding: 0.6rem;
+  white-space: nowrap;
+}
+
+/* Add scroll indicator for better UX */
+.table-container > div:last-child::after {
+  content: '→ Scroll for more';
+  position: sticky;
+  right: 0;
+  bottom: 10px;
+  background: var(--powder-blue);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.table-container > div:last-child:hover::after {
+  opacity: 0.8;
+}
+
+
+
 /* Cards */
 .card {
   background-color: var(--background-light);

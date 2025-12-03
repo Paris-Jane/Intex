@@ -10,12 +10,17 @@
     const knex = require("knex")({ // KNEX: allows you to work with SQL databases
     client: "pg", // connect to PostgreSQL (put database name here if something else)
     connection: { // connect to the database. If you deploy this to an internet host, you need to use process.env.DATABASE_URL
-        host: process.env.RDS_HOSTNAME || "awseb-e-zmtvhhdgpm-stack-awsebrdsdatabase-cjcdmyxevp9y.c128cucaotxd.us-east-2.rds.amazonaws.com",
-        user: process.env.RDS_USERNAME || "intex214",
-        password: process.env.RDS_PASSWORD || "Hopethisworks1",
-        database: process.env.RDS_DB_NAME || "ebdb",
-        port: process.env.RDS_PORT || 5432,
-        ssl: { rejectUnauthorized: false }
+        // host: process.env.RDS_HOSTNAME || "awseb-e-zmtvhhdgpm-stack-awsebrdsdatabase-cjcdmyxevp9y.c128cucaotxd.us-east-2.rds.amazonaws.com",
+        // user: process.env.RDS_USERNAME || "intex214",
+        // password: process.env.RDS_PASSWORD || "Hopethisworks1",
+        // database: process.env.RDS_DB_NAME || "ebdb",
+        // port: process.env.RDS_PORT || 5432,
+        // ssl: { rejectUnauthorized: false }
+        host: "localhost",
+        user: "postgres",
+        password: "admin",
+        database: "EllaRises",
+        port: 5432
     }});
 
 // CREATE VARIABLES:
@@ -96,15 +101,19 @@
 // PARTICIPANT MAINTENANCE PAGE:
     app.get("/participants", async (req, res) => {
         try {
-            // safe access to session
+            // flash messages + query messages
             const sessionData = req.session || {};
+            let message = sessionData.flashMessage || '';
+            let messageType = sessionData.flashType || 'success';
 
-            const message = sessionData.flashMessage || "";
-            const messageType = sessionData.flashType || "success";
-
-            // clear flash so it only shows once
             sessionData.flashMessage = null;
             sessionData.flashType = null;
+
+            // fallback to query params (for deletes)
+            if (!message && req.query.message) {
+                message = req.query.message;
+                messageType = req.query.messageType || 'success';
+            }
 
             // --- filtering/sorting code ---
             let { searchColumn, searchValue, city, school, interest, donations, sortColumn, sortOrder,} = req.query;
@@ -499,24 +508,6 @@
                     res.status(500).json({ error: err.message });
                 });
         });
-
-
-        // // NOTE: This is still a simple placeholder; update later to match your add.ejs form and real columns
-        // const { event_name, event_id /* plus any other survey fields */ } = req.body;
-        
-        // try {
-        //     await knex("survey_results").insert({
-        //         event_name: event_name, // adjust to real column names when wiring form
-        //         event_id: event_id
-        //         // other survey columns here...
-        //     });
-        
-        // res.redirect("/surveys");
-        // } catch (err) {
-        //     console.error("Error inserting survey:", err);
-        //     res.status(500).send("Error saving survey");
-        // }
-        // });
         
 // DELETE FUNCTIONALITY:
     // route that occurs when delete button is pressed
@@ -524,11 +515,14 @@
         const { table, id } = req.params;
 
         const primaryKeyByTable = {
-            customers: "customer_id",
-            employees: "employee_id",
-            orders: "order_id"
+            participants: "participant_id",
+            milestones: "milestone_id",
+            events: "event_id",
+            survey_results: "survey_id",
+            donations: "donation_id"
         };
-        const primaryKey = primaryKeyByTable[table]; // gather the primary key based on table
+
+        const primaryKey = primaryKeyByTable[table]; 
 
         try {
             await knex(table).where(primaryKey, id).del();
@@ -538,71 +532,6 @@
             res.status(500).json({ error: err.message });
         }
     });
-        // Map tables to primary key columns
-        const deleteConfig = {
-        participants: "participant_id",
-        events: "event_id",
-        surveys: "survey_id",
-        milestones: "milestone_id",
-        donations: "donation_id",
-        users: "user_id",
-        };
-        
-        app.post("/delete-multiple", async (req, res) => {
-        try {
-            const { table, ids, message } = req.body;
-        
-            const idColumn = deleteConfig[table];
-            if (!idColumn) {
-            console.error("Delete attempted on invalid table:", table);
-            return res.status(400).send("Invalid table");
-            }
-        
-            let idArray = [];
-            if (typeof ids === "string") {
-            // ids might come as a JSON string like '["1","2","3"]'
-            try {
-                idArray = JSON.parse(ids);
-            } catch (parseErr) {
-                console.error("Error parsing ids JSON:", parseErr);
-                // fall back: single id in string
-                idArray = [ids];
-            }
-            } else if (Array.isArray(ids)) {
-            idArray = ids;
-            }
-        
-            if (!Array.isArray(idArray) || idArray.length === 0) {
-            // nothing to delete; just go back
-            return res.redirect("/" + table);
-            }
-        
-            const deletedCount = await knex(table)
-            .whereIn(idColumn, idArray)
-            .del();
-        
-            // store flash message in session (guard req.session)
-            const sessionData = req.session || {};
-            sessionData.flashMessage =
-            message || `${deletedCount} record(s) deleted`;
-            sessionData.flashType = "success";
-        
-            res.redirect("/" + table);
-        } catch (err) {
-            console.error("Error deleting records:", err);
-            console.error("Error details:", {
-            message: err.message,
-            code: err.code,
-            detail: err.detail,
-            });
-        
-            const sessionData = req.session || {};
-            sessionData.flashMessage = "Error deleting record(s)";
-            sessionData.flashType = "danger";
-        
-            res.redirect("/" + (req.body.table || ""));
-        }
-        });
 
 // START TO LISTEN (& tell command line)
 app.listen(port, () => console.log("the server has started to listen"));
