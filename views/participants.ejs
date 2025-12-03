@@ -312,6 +312,7 @@
                         <span id="selectedCount" style="font-weight: 600; color: #666;">0 selected</span>
                     </div>
                     <div class="flex gap-2">
+                        <button class="btn btn-secondary btn-small" id="viewSelected" style="display: none;"> View User </button>
                         <button class="btn btn-secondary btn-small" id="editSelected" style="display: none;"> Edit </button>
                         <button class="btn btn-danger btn-small" id="deleteSelected"> Delete Selected </button>
                         <button class="btn btn-outline btn-small" id="clearSelection"> Clear Selection</button>
@@ -356,8 +357,9 @@
                                 <tr>
                                     <!--UPDATE LATER: only display checkbox (only next row) if user is admin-->
                                     <td><input type="checkbox" class="row-checkbox" value="<%= p.participant_id %>" data-name="<%= p.participant_first_name %> <%= p.participant_last_name %>"></td>
-                                    <td><a href="/personal/<%= p.participant_id%>"><%= p.participant_first_name %></a></td>
-                                    <td><%= p.participant_last_name %></td>
+                                    <!--FORMAT LINK CHANGE-->
+                                    <td><a href="/personal/<%= p.participant_id%>" style="color: var(--primary); text-decoration: underline; font-weight: 600;"><%= p.participant_first_name %></a></td>
+                                    <td><a href="/personal/<%= p.participant_id%>" style="color: var(--primary); text-decoration: underline; font-weight: 600;"><%= p.participant_last_name %></a></td>
                                     <td><%= p.participant_username %></td>
                                     <td><%= p.participant_email %></td>
                                     <td><%= p.participant_phone %></td>
@@ -564,6 +566,7 @@
         const selectAllCheckbox = document.getElementById('selectAll');
         const bulkActionsBar = document.getElementById('bulkActionsBar');
         const selectedCountSpan = document.getElementById('selectedCount');
+        const viewButton = document.getElementById('viewSelected');
         const editButton = document.getElementById('editSelected');
 
         selectAllCheckbox.addEventListener('change', function() {
@@ -585,9 +588,11 @@
             if (count > 0) {
                 bulkActionsBar.style.display = 'block';
                 selectedCountSpan.textContent = count + ' selected';
+                viewButton.style.display = count === 1 ? 'inline-block' : 'none';
                 editButton.style.display = count === 1 ? 'inline-block' : 'none';
             } else {
                 bulkActionsBar.style.display = 'none';
+                viewButton.style.display = 'none';
                 editButton.style.display = 'none';
             }
 
@@ -599,6 +604,15 @@
             document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
             selectAllCheckbox.checked = false;
             updateBulkActions();
+        });
+
+        // View Selected (single) - navigates to /personal/:id
+        document.getElementById('viewSelected').addEventListener('click', function() {
+            const checkedBox = document.querySelector('.row-checkbox:checked');
+            if (checkedBox) {
+                const participantId = checkedBox.value;
+                window.location.href = '/personal/' + participantId;
+            }
         });
 
         // Edit Selected (single)
