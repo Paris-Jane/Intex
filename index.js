@@ -222,7 +222,7 @@
         }
     });
 
-// EVENT REGISTRATION FUNCTIONALITY (USER END):
+// ADD EVENT REGISTRATION FUNCTIONALITY (USER END):
     // this is the functionality that allows a user to register for an event from the "calendar page"
     app.post('/register-event/:eventId', async (req, res) => {
         const eventId = req.params.eventId;
@@ -231,7 +231,7 @@
             // ===== TEMPORARY: Mock logged-in user for testing =====
                 if (!req.session.user) {
                 req.session.user = {
-                    id: 40,  // Change this to a valid participant_id from your database
+                    id: 70,  // Change this to a valid participant_id from your database
                     username: 'testuser',
                     role: 'participant'
                 };
@@ -336,6 +336,66 @@
             res.status(500).json({ 
                 success: false, 
                 message: 'Error registering for event.' 
+            });
+        }
+    });
+
+// CANCEL EVENT REGISTRATION FUNCTIONALITY (USER END):
+    app.post('/cancel-registration/:eventId', async (req, res) => {
+        const eventId = req.params.eventId;
+        
+        try {
+            // ===== TEMPORARY: Mock logged-in user =====
+            const TEST_USER_ID = 70;  // ← Change this to match your test user
+            // ==========================================
+            
+            // Get event details
+            const event = await knex('events')
+                .where('event_id', eventId)
+                .first();
+            
+            if (!event) {
+                return res.status(404).json({ 
+                    success: false, 
+                    message: 'Event not found' 
+                });
+            }
+            
+            // Check if user has a registration for this event
+            const existingRegistration = await knex('event_registrations')
+                .where('event_id', eventId)
+                .where('participant_id', TEST_USER_ID)
+                .whereIn('registration_status', ['registered', 'attended'])
+                .first();
+            
+            if (!existingRegistration) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'You are not registered for this event.' 
+                });
+            }
+            
+            // Update registration status to 'cancelled'
+            await knex('event_registrations')
+                .where('event_registration_id', existingRegistration.event_registration_id)
+                .update({
+                    registration_status: 'cancelled'
+                });
+            
+            // Return success
+            res.json({ 
+                success: true, 
+                message: 'Registration cancelled successfully',
+                event: {
+                    event_name: event.event_name
+                }
+            });
+            
+        } catch (err) {
+            console.error('Error cancelling registration:', err);
+            res.status(500).json({ 
+                success: false, 
+                message: 'Error cancelling registration.' 
             });
         }
     });
