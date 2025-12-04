@@ -52,6 +52,7 @@ app.use((req, res, next) => {
 });
 
 // MIDDLEWARE:
+app.use(express.json()); // Parse JSON request bodies
 app.use(express.urlencoded({ extended: true })); // Makes working with HTML forms a lot easier. Takes inputs and stores them in req.body (for post) or req.query (for get).
 
 //Login middleware
@@ -2278,6 +2279,59 @@ app.get("/event_registrations", async (req, res) => {
         availableYears: [],
         eventNameOptions: [],
       },
+    });
+  }
+});
+
+// CHATBOT PAGE:
+// Route to display chatbot page
+app.get("/chatbot", (req, res) => {
+  res.render("chatbot", {
+    isLoggedIn: req.session.isLoggedIn || false,
+    userId: req.session.user?.id || null,
+    role: req.session.user?.role || null,
+  });
+});
+
+// Route to handle chatbot POST requests
+app.post("/chatbot", async (req, res) => {
+  const userMsg = req.body.message;
+
+  // Validate input
+  if (!userMsg || typeof userMsg !== "string") {
+    return res.status(400).send({
+      reply: "Please provide a valid message.",
+    });
+  }
+
+  try {
+    const { OpenAI } = require("openai");
+
+    const client = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+
+    const completion = await client.chat.completions.create({
+      model: "gpt-5-nano",
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are a safe, supportive career assistant for teenage girls in the Ella Rises program. You ONLY help with résumés, job applications, college applications, professional writing, interviewing, or general career skills. Avoid personal topics or anything unsafe.",
+        },
+        { role: "user", content: userMsg },
+      ],
+    });
+
+    res.send({
+      reply: completion.choices[0].message.content,
+    });
+  } catch (err) {
+    console.error("Chatbot Error:", err);
+
+    res.status(500).send({
+      reply:
+        "Sorry, I'm having trouble responding right now. Please try again in a moment!",
     });
   }
 });
