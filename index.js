@@ -1282,8 +1282,184 @@ app.get("/surveys", async (req, res) => {
 });
 
 // MILESTONES MAINTENANCE PAGE:
-app.get("/milestones", (req, res) => {
-  res.status(418).render("milestones");
+// MILESTONES MAINTENANCE PAGE:
+app.get("/milestones", async (req, res) => {
+  try {
+    // flash messages + query messages
+    const sessionData = req.session || {};
+    let message = sessionData.flashMessage || "";
+    let messageType = sessionData.flashType || "success";
+
+    sessionData.flashMessage = null;
+    sessionData.flashType = null;
+
+    // fallback to query params (for deletes)
+    if (!message && req.query.message) {
+      message = req.query.message;
+      messageType = req.query.messageType || "success";
+    }
+
+    // --- filtering/sorting code ---
+    let {
+      searchColumn,
+      searchValue,
+      milestoneTitles,
+      categories,
+      sortColumn,
+      sortOrder,
+    } = req.query;
+
+    // defaults
+    searchColumn = searchColumn || "full_name";
+    sortOrder = sortOrder === "desc" ? "desc" : "asc";
+
+    // Base query with join to participants table
+    let query = knex("milestones as m")
+      .join("participants as p", "m.participant_id", "p.participant_id")
+      .select(
+        "m.milestone_id",
+        "m.participant_id",
+        "m.milestone_title",
+        "m.milestone_date",
+        "m.milestone_category",
+        "p.participant_first_name",
+        "p.participant_last_name"
+      );
+
+    // Case-insensitive search
+    if (searchValue && searchColumn) {
+      const term = searchValue.trim();
+      if (term) {
+        if (searchColumn === "full_name") {
+          // Handle full name like "Jane", "Doe", or "Jane Doe Smith"
+          const parts = term.split(/\s+/);
+
+          if (parts.length === 1) {
+            // One word -> match either first OR last name
+            const likeOne = `%${parts[0]}%`;
+            query.where(function () {
+              this.where("p.participant_first_name", "ilike", likeOne).orWhere(
+                "p.participant_last_name",
+                "ilike",
+                likeOne
+              );
+            });
+          } else {
+            // Multiple words -> first piece as first name, last piece as last name
+            const firstLike = `%${parts[0]}%`;
+            const lastLike = `%${parts[parts.length - 1]}%`;
+
+            query.where(function () {
+              this.where(
+                "p.participant_first_name",
+                "ilike",
+                firstLike
+              ).andWhere("p.participant_last_name", "ilike", lastLike);
+            });
+          }
+        } else if (searchColumn === "participant_first_name") {
+          query.whereRaw(`CAST(p.participant_first_name AS TEXT) ILIKE ?`, [
+            `%${term}%`,
+          ]);
+        } else if (searchColumn === "participant_last_name") {
+          query.whereRaw(`CAST(p.participant_last_name AS TEXT) ILIKE ?`, [
+            `%${term}%`,
+          ]);
+        } else if (searchColumn === "milestone_title") {
+          query.whereRaw(`CAST(m.milestone_title AS TEXT) ILIKE ?`, [
+            `%${term}%`,
+          ]);
+        } else if (searchColumn === "milestone_category") {
+          query.whereRaw(`CAST(m.milestone_category AS TEXT) ILIKE ?`, [
+            `%${term}%`,
+          ]);
+        } else if (searchColumn === "milestone_date") {
+          query.whereRaw(`CAST(m.milestone_date AS TEXT) ILIKE ?`, [
+            `%${term}%`,
+          ]);
+        }
+      }
+    }
+
+    // Milestone Titles filter
+    const milestoneTitleArr = paramToArray(milestoneTitles);
+    if (!milestoneTitleArr.includes("all")) {
+      query.whereIn("m.milestone_title", milestoneTitleArr);
+    }
+
+    // Categories filter
+    const categoryArr = paramToArray(categories);
+    if (!categoryArr.includes("all")) {
+      query.whereIn("m.milestone_category", categoryArr);
+    }
+
+    // Sorting
+    if (sortColumn) {
+      // Handle sorting on joined table columns
+      if (
+        sortColumn === "participant_first_name" ||
+        sortColumn === "participant_last_name"
+      ) {
+        query.orderBy(`p.${sortColumn}`, sortOrder);
+      } else {
+        query.orderBy(`m.${sortColumn}`, sortOrder);
+      }
+    } else {
+      // Default sort by milestone_date descending
+      query.orderBy("m.milestone_date", "desc");
+    }
+
+    // Get distinct milestone titles from database for filter options
+    const milestoneTitleOptionsPromise = knex("milestones")
+      .select("milestone_title")
+      .distinct("milestone_title")
+      .whereNotNull("milestone_title")
+      .orderBy("milestone_title", "asc");
+
+    // Execute queries in parallel
+    const [results, milestoneTitleRows] = await Promise.all([
+      query,
+      milestoneTitleOptionsPromise,
+    ]);
+
+    // Extract milestone titles from results
+    const milestoneTitleOptions = milestoneTitleRows
+      .map((r) => r.milestone_title)
+      .filter((t) => t && t.trim() !== "");
+
+    const filters = {
+      searchColumn,
+      searchValue: searchValue || "",
+      milestoneTitles: milestoneTitleArr,
+      categories: categoryArr,
+      sortColumn: sortColumn || "",
+      sortOrder,
+      milestoneTitleOptions,
+    };
+
+    res.render("milestones", {
+      milestones: results,
+      message,
+      messageType,
+      filters,
+    });
+  } catch (err) {
+    console.error("Error loading milestones:", err);
+    res.render("milestones", {
+      milestones: [],
+      message: "Error loading milestones",
+      messageType: "danger",
+      filters: {
+        searchColumn: "full_name",
+        searchValue: "",
+        milestoneTitles: ["all"],
+        categories: ["all"],
+        sortColumn: "",
+        sortOrder: "asc",
+        milestoneTitleOptions: [],
+      },
+    });
+  }
 });
 
 // DONATIONS MAINTENANCE PAGE:
