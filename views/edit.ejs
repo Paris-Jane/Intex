@@ -1,3 +1,4 @@
+<!--edit.ejs-->
 <!--Paris Ward, Lucas Moraes, Joshua Ethington, Parker Sandstrom-->
 <!--This page will display add forms, and allow CRUD (for managers) + Search Capabilities.-->
 <!--This page will only be visible to users who are logged in.-->
@@ -39,6 +40,7 @@
                             <a href="#" class="selected-nav">Pages ▾</a>
                         </span>
                         <ul class="dropdown-menu">
+                            <li><a href="/users">Participants</a></li>
                             <li><a href="/participants">Participants</a></li>
                             <li><a href="/events">Events</a></li>
                             <li><a href="/event_registrations">Event Registrations</a></li>
@@ -71,8 +73,16 @@
     <div class="container">
         <div class="add-card">
             <!-- Edit-Participant Form -->
-            <% if (table_name === "participants") { %>
+            <% if (table_name === "users") { %>
                 <form id="addForm" class="modern-form" action="/edit/participants/<%= info.participant_id %>" method="POST">
+            <% if (table_name === "users") { %>
+                <% 
+                    // Use profile-specific route if coming from profile page
+                    const formAction = (typeof fromProfile !== 'undefined' && fromProfile) 
+                        ? `/profile-edit/participants/${info.participant_id}` 
+                        : `/edit/participants/${info.participant_id}`;
+                %>
+                <form id="addForm" class="modern-form" action="<%= formAction %>" method="POST">
                     
                     <div class="form-section">
                         <h2 class="section-title">Basic Information</h2>
@@ -241,14 +251,20 @@
                     </div>
 
                     <div class="form-actions">
-                        <a href="/participants" class="btn btn-secondary">Cancel</a>
+                        <% 
+                            // Determine cancel link based on where we came from
+                            const cancelLink = (typeof fromProfile !== 'undefined' && fromProfile) 
+                                ? `/profile/${info.participant_id}?tab=profile` 
+                                : '/participants';
+                        %>
+                        <a href="<%= cancelLink %>" class="btn btn-secondary">Cancel</a>
                         <button type="submit" class="btn btn-primary">Edit Participant</button>
                     </div>
                 </form>
 
-            <!-- Edit-Events Form -->
-            <% } else if (table_name === "events") { %>
-                <form id="addForm" class="modern-form" action="/edit/events/<%= info.event_id %>" method="POST">
+            <!-- Edit-Event registration Form -->
+            <% } else if (table_name === "event_registrations") { %>
+                <form id="addForm" class="modern-form" action="/edit/event_registrations/<%= info.event_id %>" method="POST">
                     
                     <div class="form-section">
                         <h2 class="section-title">Event Details</h2>
@@ -256,17 +272,15 @@
 
                         <div class="form-group">
                             <label class="form-label">Event Name <span class="required">*</span></label>
-                            <select class="form-select" name="event_type_id" id="eventSelect" required>
-    <option value="">Select an Event Type</option>
-    <% event_types.forEach(t => { %>
-        <option value="<%= t.event_type_id %>" 
-            <%= info && info.event_type_id == t.event_type_id ? "selected" : "" %>>
-            <%= t.event_name %>
-        </option>
-    <% }) %>
-</select>
-
-                            <input type="hidden" name="event_name" id="eventNameInput" value="<%= info.event_name || '' %>">    
+                            <select class="form-select" name="event_type_id" id="eventSelect" value="<%= info.event_name || '' %>"required>
+                        <option value="">Select an Event Type</option>
+                        <% event_types.forEach(t => { %>
+                            <option value="<%= t.event_type_id %>" 
+                                <%= info && info.event_type_id == t.event_type_id ? "selected" : "" %>>
+                                <%= t.event_name %>
+                            </option>
+                        <% }) %>
+                    </select>
                         </div>
 
                         <div class="form-group">
@@ -307,7 +321,7 @@
                                 type="date" 
                                 class="form-input" 
                                 name="event_date" 
-                                value="<%= info.event_date ? (info.date.toISOString ? info.date.toISOString().slice(0,10) : info.date.slice(0,10)) : '' %>" 
+                                value="<%= info.event_date ? (info.event_date.toISOString ? info.event_date.toISOString().slice(0,10) : info.event_date.slice(0,10)) : '' %>" 
                                 required>
                         </div>
 
@@ -371,7 +385,12 @@
 
             <!-- Edit-Event_registration Form -->
             <% } else if (table_name === "event_registration") { %>
-                <form id="addForm" class="modern-form" action="/edit/event_registration/<%= info.registration_id %>" method="POST">
+                <% 
+                    const formActionReg = (typeof fromProfile !== 'undefined' && fromProfile) 
+                        ? `/profile-edit/event_registrations/${info.event_registration_id}` 
+                        : `/edit/event_registrations/${info.event_registration_id}`;
+                %>
+                <form id="addForm" class="modern-form" action="<%= formActionReg %>" method="POST">
                     
                     <div class="form-section">
                         <h2 class="section-title">Participant Information</h2>
@@ -487,14 +506,24 @@
                     </div>
 
                     <div class="form-actions">
-                        <a href="/event_registration" class="btn btn-secondary">Cancel</a>
+                        <% 
+                            const cancelLinkReg = (typeof fromProfile !== 'undefined' && fromProfile) 
+                                ? `/profile/${info.participant_id}?tab=events` 
+                                : '/event_registrations';
+                        %>
+                        <a href="<%= cancelLinkReg %>" class="btn btn-secondary">Cancel</a>
                         <button type="submit" class="btn btn-primary">Edit Event Registration</button>
                     </div>
                 </form>
 
             <!-- Edit-milestones Form -->
             <% } else if (table_name === "milestones") { %>
-                <form id="addForm" class="modern-form" action="/edit/milestones/<%= info.milestone_id %>" method="POST">
+                <% 
+                    const formActionMile = (typeof fromProfile !== 'undefined' && fromProfile) 
+                        ? `/profile-edit/milestones/${info.milestone_id}` 
+                        : `/edit/milestones/${info.milestone_id}`;
+                %>
+                <form id="addForm" class="modern-form" action="<%= formActionMile %>" method="POST">
                     
                     <div class="form-section">
                         <h2 class="section-title">Participant Information</h2>
@@ -625,14 +654,24 @@
                     </div>
 
                     <div class="form-actions">
-                        <a href="/milestones" class="btn btn-secondary">Cancel</a>
+                        <% 
+                            const cancelLinkMile = (typeof fromProfile !== 'undefined' && fromProfile) 
+                                ? `/profile/${info.participant_id}?tab=milestones` 
+                                : '/milestones';
+                        %>
+                        <a href="<%= cancelLinkMile %>" class="btn btn-secondary">Cancel</a>
                         <button type="submit" class="btn btn-primary">Edit Milestone</button>
                     </div>
                 </form>
 
             <!-- Edit Donations Form -->
             <% } else if (table_name === "donations") { %>
-                <form id="addForm" class="modern-form" action="/edit/donations/<%= info.donation_id %>" method="POST">
+                <% 
+                    const formActionDon = (typeof fromProfile !== 'undefined' && fromProfile) 
+                        ? `/profile-edit/donations/${info.donation_id}` 
+                        : `/edit/donations/${info.donation_id}`;
+                %>
+                <form id="addForm" class="modern-form" action="<%= formActionDon %>" method="POST">
                     
                     <div class="form-section">
                         <h2 class="section-title">Donor Information</h2>
@@ -685,12 +724,22 @@
                     </div>
 
                     <div class="form-actions">
-                        <a href="/donations" class="btn btn-secondary">Cancel</a>
+                        <% 
+                            const cancelLinkDon = (typeof fromProfile !== 'undefined' && fromProfile) 
+                                ? `/profile/${info.participant_id}?tab=donations` 
+                                : '/donations';
+                        %>
+                        <a href="<%= cancelLinkDon %>" class="btn btn-secondary">Cancel</a>
                         <button type="submit" class="btn btn-primary">Edit Donation</button>
                     </div>
                 </form>
             <% } else if (table_name === "survey_results") { %>
-                <form id="addForm" class="modern-form" action="/edit/survey_results/<%= info.survey_id %>" method="POST">
+                <% 
+                    const formActionSurvey = (typeof fromProfile !== 'undefined' && fromProfile) 
+                        ? `/profile-edit/survey_results/${info.survey_id}` 
+                        : `/edit/survey_results/${info.survey_id}`;
+                %>
+                <form id="addForm" class="modern-form" action="<%= formActionSurvey %>" method="POST">
                     
                     <div class="form-section">
                         <h2 class="section-title">Participant Information</h2>
@@ -871,7 +920,12 @@
                     </div>
 
                     <div class="form-actions">
-                        <a href="/surveys" class="btn btn-secondary">Cancel</a>
+                        <% 
+                            const cancelLinkSurvey = (typeof fromProfile !== 'undefined' && fromProfile) 
+                                ? `/profile/${info.participant_id}?tab=surveys` 
+                                : '/surveys';
+                        %>
+                        <a href="<%= cancelLinkSurvey %>" class="btn btn-secondary">Cancel</a>
                         <button type="submit" class="btn btn-primary">Edit Survey</button>
                     </div>
                 </form>
@@ -887,11 +941,151 @@
     </div>
     </main>
 
-    <!-- Footer -->
+    <!--Footer-->
     <footer>
         <p>&copy; 2025 Ella Rises. All Rights Reserved.</p>
-        <p style="margin-top: 1rem; font-size: 0.9rem;">Making a difference, one woman at a time.</p>
+        <p class="footer-subtext">Making a difference, one woman at a time.</p>
+
+        <div class="custom-language-selector">
+            <button class="language-dropdown-btn" onclick="toggleLanguageDropdown()">
+                <span id="currentLanguage">
+                    <% if (language === 'es') { %>🌐 Español
+                    <% } else if (language === 'fr') { %>🌐 Français
+                    <% } else if (language === 'de') { %>🌐 Deutsch
+                    <% } else if (language === 'pt') { %>🌐 Português
+                    <% } else if (language === 'ar') { %>🌐 العربية
+                    <% } else if (language === 'zh-CN') { %>🌐 中文
+                    <% } else if (language === 'ja') { %>🌐 日本語
+                    <% } else if (language === 'ko') { %>🌐 한국어
+                    <% } else { %>🌐 English <% } %>
+                </span>
+                <span class="dropdown-arrow">▾</span>
+            </button>
+            <div class="language-dropdown-menu" id="languageDropdown">
+                <a href="#" onclick="changeLanguage('en'); return false;">English</a>
+                <a href="#" onclick="changeLanguage('es'); return false;">Español</a>
+                <a href="#" onclick="changeLanguage('fr'); return false;">Français</a>
+                <a href="#" onclick="changeLanguage('de'); return false;">Deutsch</a>
+                <a href="#" onclick="changeLanguage('pt'); return false;">Português</a>
+                <a href="#" onclick="changeLanguage('ar'); return false;">العربية</a>
+                <a href="#" onclick="changeLanguage('zh-CN'); return false;">中文</a>
+                <a href="#" onclick="changeLanguage('ja'); return false;">日本語</a>
+                <a href="#" onclick="changeLanguage('ko'); return false;">한국어</a>
+            </div>
+        </div>
+
+        <div id="google_translate_element" style="display:none;"></div>
+
+        <script>
+            const LANGUAGE_NAMES = {
+                'en': '🌐 English',
+                'es': '🌐 Español',
+                'fr': '🌐 Français',
+                'de': '🌐 Deutsch',
+                'pt': '🌐 Português',
+                'ar': '🌐 العربية',
+                'zh-CN': '🌐 中文',
+                'ja': '🌐 日本語',
+                'ko': '🌐 한국어'
+            };
+
+            // From server-side session (res.locals.language)
+            const SESSION_LANGUAGE = '<%= language || "en" %>';
+
+            // Initialize Google Translate widget – no extra logic here
+            function googleTranslateElementInit() {
+                new google.translate.TranslateElement({
+                    pageLanguage: 'en',
+                    includedLanguages: 'en,es,fr,de,pt,ar,zh-CN,ja,ko',
+                    autoDisplay: false
+                }, 'google_translate_element');
+            }
+
+            function getGoogTransLang() {
+                // Looks for cookie like: googtrans=/auto/es
+                const match = document.cookie.match(/(?:^|;)\s*googtrans=\/auto\/([^;]+)/);
+                return match ? match[1] : null;
+            }
+
+            function setLanguageLabel(lang) {
+                const el = document.getElementById('currentLanguage');
+                if (!el) return;
+                el.textContent = LANGUAGE_NAMES[lang] || LANGUAGE_NAMES['en'];
+            }
+
+            function applyLanguage(lang, isInit) {
+                const combo = document.querySelector('.goog-te-combo');
+                if (!combo) {
+                    // Wait for Google widget to finish rendering
+                    setTimeout(() => applyLanguage(lang, isInit), 200);
+                    return;
+                }
+
+                combo.value = lang;
+                combo.dispatchEvent(new Event('change'));
+                setLanguageLabel(lang);
+
+                if (!isInit) {
+                    // Persist to your session on the server
+                    fetch('/set-language', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ lang })
+                    }).catch(() => {});
+                    // Optional: localStorage helper if you want it
+                    localStorage.setItem('selectedLanguage', lang);
+                    toggleLanguageDropdown(false);
+                }
+            }
+
+            function changeLanguage(lang) {
+                applyLanguage(lang, false);
+            }
+
+            function toggleLanguageDropdown(forceClose) {
+                const dropdown = document.getElementById('languageDropdown');
+                if (!dropdown) return;
+                if (forceClose === false) {
+                    dropdown.classList.remove('show');
+                } else {
+                    dropdown.classList.toggle('show');
+                }
+            }
+
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.custom-language-selector')) {
+                    toggleLanguageDropdown(false);
+                }
+            });
+
+            document.addEventListener('DOMContentLoaded', () => {
+                // Make sure the label matches whatever we think the language is
+                setLanguageLabel(SESSION_LANGUAGE);
+
+                const cookieLang = getGoogTransLang();
+                const storedLang = localStorage.getItem('selectedLanguage');
+
+                // Priority: Google cookie > session > localStorage
+                const preferred =
+                    cookieLang ||
+                    (SESSION_LANGUAGE && SESSION_LANGUAGE !== 'undefined' ? SESSION_LANGUAGE : null) ||
+                    storedLang ||
+                    'en';
+
+                // If preferred is English, just leave as-is (no translate flicker)
+                if (preferred === 'en') {
+                    setLanguageLabel('en');
+                    return;
+                }
+
+                // Apply preferred language once widget is ready
+                setTimeout(() => applyLanguage(preferred, true), 500);
+            });
+        </script>
+
+        <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     </footer>
+
 
     <script>
         const currentTable = "<%= table_name %>";
@@ -964,9 +1158,9 @@
         }
 
         // ---------------- SURVEYS PAGE JS ----------------
-        if (currentTable === "surveys") {
-            const existingSurvey = JSON.stringify(info || {});
-            const allEvents = JSON.stringify(typeof events !== 'undefined' ? (events || []) : []);
+        if (currentTable === "survey_results") {
+            const existingSurvey = <%- JSON.stringify(info || {}) %>;
+            const allEvents = <%- JSON.stringify(typeof events !== 'undefined' ? (events || []) : []) %>;
 
             const regInputs = document.querySelectorAll('input[name="registration_status"]');
             const hiddenAttend = document.getElementById("attendStatusHidden");

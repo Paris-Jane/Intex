@@ -1,19 +1,15 @@
 <!--Paris Ward, Lucas Moraes, Joshua Ethington, Parker Sandstrom-->
-<!--This page will tell more information about ER as well as allow users to view a tableau dashboard with information about the webpage-->
+
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Performance - Ella Rises</title>
+    <title>Sign Up - Ella Rises</title>
     <link rel="stylesheet" href="/css/style.css">
-    <link rel="icon" type="image/x-icon" href="/logo.ico" />
 </head>
 <body>
-    <!-- Skip Navigation Link -->
-    <a href="#main-content" class="skip-link">Skip to main content</a>
-    
     <!-- Navigation -->
     <nav>
         <div class="nav-container">
@@ -23,7 +19,7 @@
             <ul class="nav-links">
                 <li><a href="/">Home</a></li>
                 <li><a href="/about">About</a></li>
-                <li><a href="/performance" class="selected-nav">Performance</a></li>
+                <li><a href="/performance">Performance</a></li>
                 <li><a href="/calendar">Calendar</a></li>
                 <li><a href="/donate_now">Donate Now</a></li>
 
@@ -34,7 +30,7 @@
                 <% if (role === "admin") { %>
                     <li class="dropdown">
                         <span class="dropdown-toggle">
-                            <a href="#">Pages ▾</a>
+                            <a href="#" class="selected-nav">Pages ▾</a>
                         </span>
                         <ul class="dropdown-menu">
                             <li><a href="/users">Users</a></li>
@@ -58,65 +54,145 @@
     </nav>
 
     <!-- Hero Section -->
-    <main id="main-content">
-    <section class="hero">
+    <section class="hero hero-compact">
         <div class="hero-content">
-            <h1>Performance</h1>
+            <h1>Sign up now</h1>
+            <p class="hero-subtitle">Fill in the details below to create a new account.</p>
         </div>
     </section>
-    </main>
 
-    <!-- Tableau Dashboard -->
-    <section class="container" style="padding: 3rem 1rem;">
-        <div style="max-width: 1200px; margin: 0 auto; text-align: center;">
-            <div class='tableauPlaceholder' id='viz1764871927661' style='position: relative; margin: 0 auto;'>
-                <noscript>
-                    <a href='#'>
-                        <img alt='Star Wars Dashboard' src='https://public.tableau.com/static/images/St/StarWars-ScreenTimeAnalysis/StarWars/1_rss.png' style='border: none; width: 100%; max-width: 1200px;' />
-                    </a>
-                </noscript>
-                <object class='tableauViz' style='display:none;'>
-                    <param name='host_url' value='https%3A%2F%2Fpublic.tableau.com%2F' />
-                    <param name='embed_code_version' value='3' />
-                    <param name='site_root' value='' />
-                    <param name='name' value='StarWars-ScreenTimeAnalysis&#47;StarWars' />
-                    <param name='tabs' value='no' />
-                    <param name='toolbar' value='yes' />
-                    <param name='static_image' value='https://public.tableau.com/static/images/St/StarWars-ScreenTimeAnalysis/StarWars/1.png' />
-                    <param name='animate_transition' value='yes' />
-                    <param name='display_static_image' value='yes' />
-                    <param name='display_spinner' value='yes' />
-                    <param name='display_overlay' value='yes' />
-                    <param name='display_count' value='yes' />
-                    <param name='language' value='en-US' />
-                </object>
-            </div>
-            <div style="margin: 2rem auto; max-width: 900px; text-align: left;">
-                <p><strong>Rise With Ella: Empowering Futures Together</strong></p>
-                <p>We believe in the power of community and the brilliance of our youth.</p>
-                <p><strong>Why We&rsquo;re Fundraising</strong><br>
-                Your generous contribution will impact these programs and experiences:</p>
-                <ul style="margin-left: 1.2rem; list-style: disc;">
-                    <li>Ella Rises Youth Summits: day camps focused on the Ella Rises Experience* across the state of Utah.</li>
-                    <li>Educational tours to local universities, colleges, and businesses.</li>
-                    <li>STEM, education, and our arts programs like the Ella Rises Mariachi band and Ballet Folklorico.</li>
-                </ul>
-                <p>*The Ella Rises Experience is a joyful blend of art, STEM, and educational exploration — designed to build confidence in each girl's divine worth and purpose.</p>
-                <p><strong>Here&rsquo;s How You Can Help Today</strong></p>
-                <ul style="margin-left: 1.2rem; list-style: disc;">
-                    <li>Donate — Make a one-time or monthly gift.</li>
-                    <li>Share — Post our campaign on your social platforms.</li>
-                    <li>Join — Become a mentor, volunteer, or community partner.</li>
-                </ul>
-                <p>With your support, Ella Rises.</p>
-                <p>With gratitude,<br>
-                Nadia Cates, Founder of Ella Rises</p>
-            </div>
-            <div style="margin-top: 1.5rem;">
-                <a class="btn btn-primary" href="/donate_now">Donate Now</a>
-            </div>
+    <!--Main Content-->
+    <div class="container">
+        <div class="add-card">
+            <form id="addForm" class="modern-form" action="/signup" method="POST">
+                <div class="form-section">
+                    <h2 class="section-title">Basic Information</h2>
+                    <p class="section-description">Enter the your personal details</p>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">First Name <span class="required">*</span></label>
+                            <input type="text" class="form-input" name="participant_first_name" placeholder="John" required autofocus>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Last Name <span class="required">*</span></label>
+                            <input type="text" class="form-input" name="participant_last_name" placeholder="Doe" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Username <span class="required">*</span></label>
+                            <input type="text" class="form-input" name="participant_username" placeholder="jdoe" required>
+                            <span class="form-hint">Used for login</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Password <span class="required">*</span></label>
+                            <input type="password" class="form-input" name="participant_password" placeholder="••••••••" required>
+                            <span class="form-hint">Minimum 8 characters</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="hidden" name="participant_role" value="participant">    
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="section-title">Contact Details</h2>
+                    <p class="section-description">How can we reach this participant?</p>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Phone Number <span class="required">*</span></label>
+                            <input type="tel" class="form-input" name="participant_phone" placeholder="(123) 456-7890" pattern="[0-9]{10}" required>
+                            <span class="form-hint">10 digits, no formatting</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Email Address <span class="required">*</span></label>
+                            <input type="email" class="form-input" name="participant_email" placeholder="example@email.com" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="section-title">Location & Background</h2>
+                    <p class="section-description">Tell us more about the participant</p>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">City <span class="required">*</span></label>
+                            <input list="cities" class="form-input" name="participant_city" placeholder="Select or type city" required>
+                            <datalist id="cities">
+                                <option value="Bountiful">
+                                <option value="Draper">
+                                <option value="Layton">
+                                <option value="Lehi">
+                                <option value="Logan">
+                                <option value="Murray">
+                                <option value="Ogden">
+                                <option value="Orem">
+                                <option value="Pleasant Grove">
+                                <option value="Provo">
+                                <option value="Riverton">
+                                <option value="Salt Lake City">
+                                <option value="Sandy">
+                                <option value="Spanish Fork">
+                                <option value="St. George">
+                                <option value="Taylorsville">
+                                <option value="West Jordan">
+                                <option value="West Valley City">
+                            </datalist>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Zip Code <span class="required">*</span></label>
+                            <input type="text" class="form-input" name="participant_zip" placeholder="84601" pattern="[0-9]{5}" maxlength="5" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">School or Employer</label>
+                        <input type="text" class="form-input" name="participant_school_or_employer" placeholder="e.g., BYU, Tech Company">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Date of Birth<span class="required">*</span></label>
+                        <input type="date" class="form-input" name="participant_dob" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Field of Interest</label>
+                        <div class="radio-group radio-group-inline">
+                            <label class="radio-label">
+                                <input type="radio" name="participant_field_of_interest" value="STEM">
+                                <span class="radio-custom"></span>
+                                <span class="radio-text"><strong>STEM</strong></span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="participant_field_of_interest" value="Arts">
+                                <span class="radio-custom"></span>
+                                <span class="radio-text"><strong>Arts</strong></span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="participant_field_of_interest" value="Both">
+                                <span class="radio-custom"></span>
+                                <span class="radio-text"><strong>Both</strong></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="/" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Sign Up Now</button>
+                </div>
+            </form>
         </div>
-    </section>
+    </div>
 
     <!--Footer-->
     <footer>
@@ -263,9 +339,8 @@
         <script src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
     </footer>
 
-
     <script>
-        // Allow Dropdown to handle delay to increase usability
+        // ---------------- NAV DROPDOWN ----------------
         let dropdownTimeout;
         const dropdown = document.querySelector('.dropdown');
         const dropdownMenu = document.querySelector('.dropdown-menu');
@@ -279,7 +354,7 @@
             dropdown.addEventListener('mouseleave', function() {
                 dropdownTimeout = setTimeout(function() {
                     dropdownMenu.style.display = 'none';
-                }, 200); // 200ms delay before closing
+                }, 200);
             });
 
             dropdownMenu.addEventListener('mouseenter', function() {
@@ -294,28 +369,26 @@
             });
         }
 
-        // Tableau embed script
-        (function() {
-            const divElement = document.getElementById('viz1764871927661');
-            if (!divElement) return;
+        // current date
+        (function () {
+            const now = new Date();
+            const date = now.toISOString().slice(0, 10);      // YYYY-MM-DD
+            const time = now.toTimeString().slice(0, 8);      // HH:MM:SS
 
-            const vizElement = divElement.getElementsByTagName('object')[0];
-            const width = divElement.offsetWidth;
-            if (width > 800) {
-                vizElement.style.width = '1200px';
-                vizElement.style.height = '900px';
-            } else if (width > 500) {
-                vizElement.style.width = '100%';
-                vizElement.style.height = '800px';
-            } else {
-                vizElement.style.width = '100%';
-                vizElement.style.height = '700px';
-            }
-
-            const scriptElement = document.createElement('script');
-            scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
-            vizElement.parentNode.insertBefore(scriptElement, vizElement);
+            document.getElementById('submission_date').value = date;
+            document.getElementById('submitssion_time').value = time;
         })();
+
+        // ---------------- FORM ANIMATIONS ----------------
+        const formInputs = document.querySelectorAll('.form-input, .form-select');
+        formInputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('focused');
+            });
+        });
     </script>
 </body>
 </html>
