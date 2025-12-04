@@ -39,10 +39,10 @@
                             <a href="#" class="selected-nav">Pages ▾</a>
                         </span>
                         <ul class="dropdown-menu">
-                            <li><a href="/users">Participants</a></li>
+                            <li><a href="/users">Users</a></li>
+                            <li><a href="/participants">Participants</a></li>
                             <li><a href="/events">Events</a></li>
-                                                      <li><a href="/event_registrations">Event Registrations</a></li>
-
+                            <li><a href="/event_registrations">Event Registrations</a></li>
                             <li><a href="/surveys">Surveys</a></li>
                             <li><a href="/milestones">Milestones</a></li>
                             <li><a href="/donations">Donations</a></li>
@@ -72,7 +72,7 @@
     <div class="container">
         <div class="add-card">
             <!-- Add-Participant Form -->
-            <%if (table_name === "users" || table_name === "participants"){%>
+            <%if (table_name === "users"){%>
                 <form id="addForm" class="modern-form" action="/add/users" method="POST">
                     
                     <div class="form-section">
