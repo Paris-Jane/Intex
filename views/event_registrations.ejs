@@ -1,0 +1,726 @@
+<!--Paris Ward, Lucas Moraes, Joshua Ethington, Parker Sandstrom-->
+<!--This page will display event registrations, and allow CRUD (for managers) + Search/Filter/Sort capabilities.-->
+<!--This page will only be visible to users who are logged in.-->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Registrations - Ella Rises</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo">
+                <a href="/"><img src="/images/logo.png" alt="Ella Rises Logo"> ELLA RISES</a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/about">About</a></li>
+                <li><a href="/performance">Performance</a></li>
+                <li><a href="/calendar">Calendar</a></li>
+                <li><a href="/donate_now">Donate Now</a></li>
+
+                <% if (isLoggedIn && userId) { %>
+                    <li><a href="/profile/<%= userId %>">Profile</a></li>
+                <% } %>
+
+                <% if (role === "admin") { %>
+                    <li class="dropdown">
+                        <span class="dropdown-toggle">
+                            <a href="#" class="selected-nav">Pages ▾</a>
+                        </span>
+                        <ul class="dropdown-menu">
+                            <li><a href="/participants">Participants</a></li>
+                            <li><a href="/events">Events</a></li>
+                            <li><a href="/event_registrations">Event Registrations</a></li>
+                            <li><a href="/surveys">Surveys</a></li>
+                            <li><a href="/milestones">Milestones</a></li>
+                            <li><a href="/donations">Donations</a></li>
+                        </ul>
+                    </li>
+                <% } %>
+
+                <% if (isLoggedIn) { %>
+                    <li><a href="/logout" class="login-btn">Logout</a></li>
+                <% } else { %>
+                    <li><a href="/login" class="login-btn">Login</a></li>
+                <% } %>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Event Registrations</h1>
+            <p>Manage and view all event registration information</p>
+        </div>
+    </section>
+
+    <!-- Database Content -->
+    <div class="container">
+        <!-- Success/Error Messages -->
+        <% if (typeof message !== 'undefined' && message) { %>
+            <div class="alert alert-<%= messageType || 'success' %>">
+                <%= message %>
+            </div>
+        <% } %>
+
+        <div class="table-container">
+            <!-- Header -->
+            <div class="table-header">
+                <h2 class="table-title">Ella Rises Event Registrations</h2>
+                <div class="table-actions">
+                    <% if (isLoggedIn && role && role.toLowerCase() === 'admin') { %>
+                        <button class="btn btn-add">
+                            <a href="/add/event_registrations">+ Add Registration</a>
+                        </button>
+                    <% } %>
+                </div>
+            </div>
+
+            <!-- Search + Filters-->
+            <div class="filter-section">
+                <form id="eventRegistrationsForm" method="GET" action="/event_registrations">
+                    <div class="filter-row">
+                        <!-- Search Dropdown -->
+                        <div class="filter-item filter-column">
+                            <select name="searchColumn" id="searchColumn" class="form-control">
+                                <option value="full_name"<% if (!filters.searchColumn || filters.searchColumn === 'full_name') { %> selected<% } %>>Participant Full Name</option>
+                                <option value="participant_first_name"<% if (filters.searchColumn === 'participant_first_name') { %> selected<% } %>>First Name</option>
+                                <option value="participant_last_name"<% if (filters.searchColumn === 'participant_last_name') { %> selected<% } %>>Last Name</option>
+                                <option value="event_name"<% if (filters.searchColumn === 'event_name') { %> selected<% } %>>Event Name</option>
+                            </select>                            
+                        </div>
+
+                        <!-- Search Input + Buttons -->
+                        <div class="filter-item filter-search">
+                            <div class="search-input-group">
+                                <input
+                                    type="text"
+                                    name="searchValue"
+                                    id="searchValue"
+                                    class="form-control"
+                                    placeholder="Search..."
+                                    value="<%= filters.searchValue || '' %>"
+                                >
+                                <button type="submit" class="btn btn-primary">Search</button>
+                                <button type="button" class="btn btn-secondary filter-toggle-btn" id="toggleFilters">
+                                    <span id="filterButtonText">Filters</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Filters -->
+                    <div id="filterSection" class="advanced-filter-section is-hidden">
+                        <h3 class="filter-options-title">Filter Options</h3>
+                        <div class="filter-cards-grid">
+                            <!-- Event Names Filter -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="filter-card-title">Event Names</h4>
+                                </div>
+                                <div class="card-body filter-card-scroll">
+                                    <%
+                                        const eventNameFilters = filters.eventNames || ['all'];
+                                        const isEventNameAll = eventNameFilters.includes('all');
+                                        const eventNameOptions = filters.eventNameOptions || [];
+                                    %>
+                                    <label class="filter-checkbox-label">
+                                        <input type="checkbox" name="eventNames" value="all" class="eventName-checkbox" <%= isEventNameAll ? 'checked' : '' %>> All
+                                    </label>
+                                    <% eventNameOptions.forEach(eventName => { %>
+                                        <label class="filter-checkbox-label">
+                                            <input type="checkbox" name="eventNames" value="<%= eventName %>" class="eventName-checkbox" <%= eventNameFilters.includes(eventName) ? 'checked' : '' %>> <%= eventName %>
+                                        </label>
+                                    <% }); %>
+                                </div>
+                            </div>
+
+                            <!-- Event Months Filter -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="filter-card-title">Event Months</h4>
+                                </div>
+                                <div class="card-body filter-card-scroll">
+                                    <%
+                                        const monthFilters = filters.months || ['all'];
+                                        const isMonthAll = monthFilters.includes('all');
+                                        const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+                                    %>
+                                    <label class="filter-checkbox-label">
+                                        <input type="checkbox" name="months" value="all" class="month-checkbox" <%= isMonthAll ? 'checked' : '' %>> All
+                                    </label>
+                                    <% monthNames.forEach((monthName, index) => { %>
+                                        <label class="filter-checkbox-label">
+                                            <input type="checkbox" name="months" value="<%= index + 1 %>" class="month-checkbox" <%= monthFilters.includes(String(index + 1)) ? 'checked' : '' %>> <%= monthName %>
+                                        </label>
+                                    <% }); %>
+                                </div>
+                            </div>
+
+                            <!-- Event Years Filter -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="filter-card-title">Event Years</h4>
+                                </div>
+                                <div class="card-body filter-card-scroll">
+                                    <%
+                                        const yearFilters = filters.years || ['all'];
+                                        const isYearAll = yearFilters.includes('all');
+                                        const availableYears = filters.availableYears || [];
+                                    %>
+                                    <label class="filter-checkbox-label">
+                                        <input type="checkbox" name="years" value="all" class="year-checkbox" <%= isYearAll ? 'checked' : '' %>> All
+                                    </label>
+                                    <% availableYears.forEach(year => { %>
+                                        <label class="filter-checkbox-label">
+                                            <input type="checkbox" name="years" value="<%= year %>" class="year-checkbox" <%= yearFilters.includes(String(year)) ? 'checked' : '' %>> <%= year %>
+                                        </label>
+                                    <% }); %>
+                                </div>
+                            </div>
+
+                            <!-- Registration Status Filter -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="filter-card-title">Registration Status</h4>
+                                </div>
+                                <div class="card-body">
+                                    <%
+                                        const statusFilters = filters.registrationStatus || ['all'];
+                                        const isStatusAll = statusFilters.includes('all');
+                                    %>
+                                    <label class="filter-checkbox-label">
+                                        <input type="checkbox" name="registrationStatus" value="all" class="status-checkbox" <%= isStatusAll ? 'checked' : '' %>> All
+                                    </label>
+                                    <label class="filter-checkbox-label">
+                                        <input type="checkbox" name="registrationStatus" value="attended" class="status-checkbox" <%= statusFilters.includes('attended') ? 'checked' : '' %>> Attended
+                                    </label>
+                                    <label class="filter-checkbox-label">
+                                        <input type="checkbox" name="registrationStatus" value="no-show" class="status-checkbox" <%= statusFilters.includes('no-show') ? 'checked' : '' %>> No-Show
+                                    </label>
+                                    <label class="filter-checkbox-label">
+                                        <input type="checkbox" name="registrationStatus" value="cancelled" class="status-checkbox" <%= statusFilters.includes('cancelled') ? 'checked' : '' %>> Cancelled
+                                    </label>
+                                    <label class="filter-checkbox-label">
+                                        <input type="checkbox" name="registrationStatus" value="registered" class="status-checkbox" <%= statusFilters.includes('registered') ? 'checked' : '' %>> Registered
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Registration Attended Flag Filter -->
+                            <div class="card">
+                                <div class="card-header">
+                                    <h4 class="filter-card-title">Attended</h4>
+                                </div>
+                                <div class="card-body">
+                                    <%
+                                        const attendedFilters = filters.registrationAttendedFlag || ['all'];
+                                        const isAttendedAll = attendedFilters.includes('all');
+                                    %>
+                                    <label class="filter-checkbox-label">
+                                        <input type="checkbox" name="registrationAttendedFlag" value="all" class="attended-checkbox" <%= isAttendedAll ? 'checked' : '' %>> All
+                                    </label>
+                                    <label class="filter-checkbox-label">
+                                        <input type="checkbox" name="registrationAttendedFlag" value="1" class="attended-checkbox" <%= attendedFilters.includes('1') ? 'checked' : '' %>> Yes
+                                    </label>
+                                    <label class="filter-checkbox-label">
+                                        <input type="checkbox" name="registrationAttendedFlag" value="0" class="attended-checkbox" <%= attendedFilters.includes('0') ? 'checked' : '' %>> No
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Filter Action Buttons -->
+                        <div class="filter-row filter-actions">
+                            <div class="filter-item filter-actions-item">
+                                <button type="submit" class="btn btn-primary btn-small btn-block">
+                                    Apply Filters
+                                </button>
+                            </div>
+                            <div class="filter-item filter-actions-item">
+                                <button type="button" class="btn btn-outline btn-small btn-block" id="clearFilters">
+                                    Clear Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Hidden inputs for sort (used by header clicks) -->
+                    <input type="hidden" name="sortColumn" id="sortColumn" value="<%= filters.sortColumn || '' %>">
+                    <input type="hidden" name="sortOrder" id="sortOrder" value="<%= filters.sortOrder || 'asc' %>">
+                </form>
+            </div>
+            
+            <!-- Bulk Actions Bar -->
+            <% if (isLoggedIn && role && role.toLowerCase() === 'admin') { %>
+                <div id="bulkActionsBar" style="display: none; background-color: #f8f0f0; padding: 1rem 1.5rem; border-bottom: 1px solid #e0e0e0;">
+                    <div class="flex-between">
+                        <div>
+                            <span id="selectedCount" style="font-weight: 600; color: #666;">0 selected</span>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="btn btn-secondary btn-small" id="viewSelected" style="display: none;"> View Registration </button>
+                            <button class="btn btn-secondary btn-small" id="editSelected" style="display: none;"> Edit </button>
+                            <button class="btn btn-danger btn-small" id="deleteSelected"> Delete Selected </button>
+                            <button class="btn btn-outline btn-small" id="clearSelection"> Clear Selection</button>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+
+            <!-- Table -->
+            <div>
+                <table style="border-spacing: 0;">
+                    <thead>
+                        <tr>
+                            <% if (isLoggedIn && role && role.toLowerCase() === 'admin') { %>
+                            <th style="width: 40px; min-width: 40px;"><input type="checkbox" id="selectAll"></th>
+                            <% } %>
+                            <th class="sortable" data-column="participant_first_name" style="min-width: 120px; width: auto; white-space: normal; padding: 0.8rem 0.6rem;">First Name <span class="sort-icon">⇅</span></th>
+                            <th class="sortable" data-column="participant_last_name" style="min-width: 120px; width: auto; white-space: normal; padding: 0.8rem 0.6rem;">Last Name <span class="sort-icon">⇅</span></th>
+                            <th class="sortable" data-column="event_name" style="min-width: 180px; width: auto; white-space: normal; padding: 0.8rem 0.6rem;">Event Name <span class="sort-icon">⇅</span></th>
+                            <th class="sortable" data-column="event_date" style="min-width: 90px; width: auto; white-space: normal; padding: 0.8rem 0.6rem;">Event Date <span class="sort-icon">⇅</span></th>
+                            <th class="sortable" data-column="registration_status" style="min-width: 120px; width: auto; white-space: normal; padding: 0.8rem 0.6rem;">Registration Status <span class="sort-icon">⇅</span></th>
+                            <th class="sortable" data-column="registration_attended_flag" style="min-width: 100px; width: auto; white-space: normal; padding: 0.8rem 0.6rem;">Attended <span class="sort-icon">⇅</span></th>
+                            <th class="sortable" data-column="registration_created_at_date" style="min-width: 140px; width: auto; white-space: normal; padding: 0.8rem 0.6rem;">Registration Created Date <span class="sort-icon">⇅</span></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (eventRegistrations && eventRegistrations.length > 0) { %>
+                            <% eventRegistrations.forEach(function(er) { %>
+                                <% 
+                                    let formattedEventDate = '';
+                                    if (er.event_date) {
+                                        const date = new Date(er.event_date);
+                                        const month = String(date.getMonth() + 1).padStart(2, '0');
+                                        const day = String(date.getDate()).padStart(2, '0');
+                                        const year = date.getFullYear();
+                                        formattedEventDate = `${month}/${day}/${year}`;
+                                    }
+                                    
+                                    let formattedCreatedDate = '';
+                                    if (er.registration_created_at_date) {
+                                        const createdDate = new Date(er.registration_created_at_date);
+                                        const month = String(createdDate.getMonth() + 1).padStart(2, '0');
+                                        const day = String(createdDate.getDate()).padStart(2, '0');
+                                        const year = createdDate.getFullYear();
+                                        formattedCreatedDate = `${month}/${day}/${year}`;
+                                    }
+                                    
+                                    const attendedText = er.registration_attended_flag === 1 ? 'Yes' : 'No';
+                                %>
+                                <tr>
+                                    <% if (isLoggedIn && role && role.toLowerCase() === 'admin') { %>
+                                    <td style="max-width: 40px;"><input type="checkbox" class="row-checkbox" value="<%= er.event_registration_id %>" data-name="<%= er.participant_first_name %> <%= er.participant_last_name %> - <%= er.event_name %>"></td>
+                                    <% } %>
+                                    <td style="max-width: none; min-width: 120px; padding: 0.8rem 0.6rem;"><%= er.participant_first_name %></td>
+                                    <td style="max-width: none; min-width: 120px; padding: 0.8rem 0.6rem;"><%= er.participant_last_name %></td>
+                                    <td style="max-width: none; min-width: 180px; padding: 0.8rem 0.6rem;"><%= er.event_name %></td>
+                                    <td style="max-width: none; min-width: 90px; padding: 0.8rem 0.6rem;"><%= formattedEventDate %></td>
+                                    <td style="max-width: none; min-width: 120px; padding: 0.8rem 0.6rem;"><%= er.registration_status %></td>
+                                    <td style="max-width: none; min-width: 100px; padding: 0.8rem 0.6rem;"><%= attendedText %></td>
+                                    <td style="max-width: none; min-width: 140px; padding: 0.8rem 0.6rem;"><%= formattedCreatedDate %></td>
+                                </tr>
+                            <% }); %>
+                        <% } else { %>
+                            <tr>
+                                <td colspan="<%= (isLoggedIn && role && role.toLowerCase() === 'admin') ? '8' : '7' %>" style="text-align: center; padding: 3rem; color: #999;">
+                                    No event registrations found. Click "Add Registration" to get started.
+                                </td>
+                            </tr>
+                        <% } %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 Ella Rises. All Rights Reserved.</p>
+        <p style="margin-top: 1rem; font-size: 0.9rem;">Making a difference, one woman at a time.</p>
+    </footer>
+
+    <script>
+        // NAV DROPDOWN
+        let dropdownTimeout;
+        const dropdown = document.querySelector('.dropdown');
+        const dropdownMenu = document.querySelector('.dropdown-menu');
+
+        if (dropdown && dropdownMenu) {
+            dropdown.addEventListener('mouseenter', function() {
+                clearTimeout(dropdownTimeout);
+                dropdownMenu.style.display = 'block';
+            });
+
+            dropdown.addEventListener('mouseleave', function() {
+                dropdownTimeout = setTimeout(function() {
+                    dropdownMenu.style.display = 'none';
+                }, 200);
+            });
+
+            dropdownMenu.addEventListener('mouseenter', function() {
+                clearTimeout(dropdownTimeout);
+                dropdownMenu.style.display = 'block';
+            });
+
+            dropdownMenu.addEventListener('mouseleave', function() {
+                dropdownTimeout = setTimeout(function() {
+                    dropdownMenu.style.display = 'none';
+                }, 200);
+            });
+        }
+
+        // When switching to a different database page, clear event_registrations filter visibility state
+        const pageLinks = document.querySelectorAll('.dropdown-menu a');
+        pageLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                sessionStorage.removeItem('filtersVisible_event_registrations');
+            });
+        });
+
+        const form = document.getElementById('eventRegistrationsForm');
+
+        // FILTER TOGGLE (per-page key)
+        document.getElementById('toggleFilters').addEventListener('click', function() {
+            const filterSection = document.getElementById('filterSection');
+            const buttonText = document.getElementById('filterButtonText');
+            if (filterSection.style.display === 'none' || filterSection.style.display === '') {
+                filterSection.style.display = 'block';
+                buttonText.textContent = 'Hide Filters';
+                sessionStorage.setItem('filtersVisible_event_registrations', 'true');
+            } else {
+                filterSection.style.display = 'none';
+                buttonText.textContent = 'Filters';
+                sessionStorage.setItem('filtersVisible_event_registrations', 'false');
+            }
+        });
+
+        // On load: restore filter visibility if user had it open
+        document.addEventListener('DOMContentLoaded', function() {
+            const filterSection = document.getElementById('filterSection');
+            const buttonText = document.getElementById('filterButtonText');
+            const filtersVisible = sessionStorage.getItem('filtersVisible_event_registrations');
+
+            const hasActiveFilters = "<%= ((filters.eventNames && !filters.eventNames.includes('all')) || (filters.months && !filters.months.includes('all')) || (filters.years && !filters.years.includes('all')) || (filters.registrationStatus && !filters.registrationStatus.includes('all')) || (filters.registrationAttendedFlag && !filters.registrationAttendedFlag.includes('all'))) ? 'true' : 'false' %>";
+
+            if (filtersVisible === 'true' || (filtersVisible === null && hasActiveFilters === 'true')) {
+                filterSection.style.display = 'block';
+                buttonText.textContent = 'Hide Filters';
+            }
+        });
+
+        // SORTING
+        let currentSortColumn = "<%= filters.sortColumn || '' %>";
+        let currentSortOrder = "<%= filters.sortOrder || 'asc' %>";
+
+        document.addEventListener('DOMContentLoaded', function() {
+            if (currentSortColumn) {
+                updateSortIcons(currentSortColumn, currentSortOrder);
+            }
+        });
+
+        function updateSortIcons(column, order) {
+            document.querySelectorAll('.sort-icon').forEach(icon => {
+                icon.textContent = '⇅';
+                icon.classList.remove('sort-active');
+            });
+            const activeHeader = document.querySelector(`th[data-column="${column}"]`);
+            if (activeHeader) {
+                const icon = activeHeader.querySelector('.sort-icon');
+                icon.classList.add('sort-active');
+                icon.textContent = order === 'asc' ? '↑' : '↓';
+            }
+        }
+
+        document.querySelectorAll('.sortable').forEach(header => {
+            header.addEventListener('click', function() {
+                const column = this.getAttribute('data-column');
+                let order = 'asc';
+                if (column === currentSortColumn) {
+                    order = currentSortOrder === 'asc' ? 'desc' : 'asc';
+                }
+                document.getElementById('sortColumn').value = column;
+                document.getElementById('sortOrder').value = order;
+                form.submit();
+            });
+        });
+
+        // Filter checkbox handling - Event Names
+        const eventNameCheckboxes = document.querySelectorAll('.eventName-checkbox');
+        const eventNameAllCheckbox = document.querySelector('.eventName-checkbox[value="all"]');
+        eventNameCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.value === 'all' && this.checked) {
+                    eventNameCheckboxes.forEach(cb => { if (cb.value !== 'all') cb.checked = false; });
+                } else if (this.value !== 'all' && this.checked) {
+                    eventNameAllCheckbox.checked = false;
+                } else if (this.value !== 'all' && !this.checked) {
+                    const anyChecked = Array.from(eventNameCheckboxes).some(cb => cb.value !== 'all' && cb.checked);
+                    if (!anyChecked) eventNameAllCheckbox.checked = true;
+                }
+            });
+        });
+
+        // Months
+        const monthCheckboxes = document.querySelectorAll('.month-checkbox');
+        const monthAllCheckbox = document.querySelector('.month-checkbox[value="all"]');
+        monthCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.value === 'all' && this.checked) {
+                    monthCheckboxes.forEach(cb => { if (cb.value !== 'all') cb.checked = false; });
+                } else if (this.value !== 'all' && this.checked) {
+                    monthAllCheckbox.checked = false;
+                } else if (this.value !== 'all' && !this.checked) {
+                    const anyChecked = Array.from(monthCheckboxes).some(cb => cb.value !== 'all' && cb.checked);
+                    if (!anyChecked) monthAllCheckbox.checked = true;
+                }
+            });
+        });
+
+        // Years
+        const yearCheckboxes = document.querySelectorAll('.year-checkbox');
+        const yearAllCheckbox = document.querySelector('.year-checkbox[value="all"]');
+        yearCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.value === 'all' && this.checked) {
+                    yearCheckboxes.forEach(cb => { if (cb.value !== 'all') cb.checked = false; });
+                } else if (this.value !== 'all' && this.checked) {
+                    yearAllCheckbox.checked = false;
+                } else if (this.value !== 'all' && !this.checked) {
+                    const anyChecked = Array.from(yearCheckboxes).some(cb => cb.value !== 'all' && cb.checked);
+                    if (!anyChecked) yearAllCheckbox.checked = true;
+                }
+            });
+        });
+
+        // Registration Status
+        const statusCheckboxes = document.querySelectorAll('.status-checkbox');
+        const statusAllCheckbox = document.querySelector('.status-checkbox[value="all"]');
+        statusCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.value === 'all' && this.checked) {
+                    statusCheckboxes.forEach(cb => { if (cb.value !== 'all') cb.checked = false; });
+                } else if (this.value !== 'all' && this.checked) {
+                    statusAllCheckbox.checked = false;
+                } else if (this.value !== 'all' && !this.checked) {
+                    const anyChecked = Array.from(statusCheckboxes).some(cb => cb.value !== 'all' && cb.checked);
+                    if (!anyChecked) statusAllCheckbox.checked = true;
+                }
+            });
+        });
+
+        // Registration Attended Flag
+        const attendedCheckboxes = document.querySelectorAll('.attended-checkbox');
+        const attendedAllCheckbox = document.querySelector('.attended-checkbox[value="all"]');
+        attendedCheckboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                if (this.value === 'all' && this.checked) {
+                    attendedCheckboxes.forEach(cb => { if (cb.value !== 'all') cb.checked = false; });
+                } else if (this.value !== 'all' && this.checked) {
+                    attendedAllCheckbox.checked = false;
+                } else if (this.value !== 'all' && !this.checked) {
+                    const anyChecked = Array.from(attendedCheckboxes).some(cb => cb.value !== 'all' && cb.checked);
+                    if (!anyChecked) attendedAllCheckbox.checked = true;
+                }
+            });
+        });
+
+        // Bulk selection
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const bulkActionsBar = document.getElementById('bulkActionsBar');
+        const selectedCountSpan = document.getElementById('selectedCount');
+        const viewButton = document.getElementById('viewSelected');
+        const editButton = document.getElementById('editSelected');
+
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+                rowCheckboxes.forEach(checkbox => checkbox.checked = this.checked);
+                updateBulkActions();
+            });
+        }
+
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('row-checkbox')) {
+                updateBulkActions();
+            }
+        });
+
+        function updateBulkActions() {
+            const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+            const count = checkedBoxes.length;
+
+            if (count > 0 && bulkActionsBar) {
+                bulkActionsBar.style.display = 'block';
+                selectedCountSpan.textContent = count + ' selected';
+                if (viewButton) viewButton.style.display = count === 1 ? 'inline-block' : 'none';
+                if (editButton) editButton.style.display = count === 1 ? 'inline-block' : 'none';
+            } else {
+                if (bulkActionsBar) bulkActionsBar.style.display = 'none';
+                if (viewButton) viewButton.style.display = 'none';
+                if (editButton) editButton.style.display = 'none';
+            }
+
+            const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = count === rowCheckboxes.length && count > 0;
+            }
+        }
+
+        if (document.getElementById('clearSelection')) {
+            document.getElementById('clearSelection').addEventListener('click', function() {
+                document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+                if (selectAllCheckbox) selectAllCheckbox.checked = false;
+                updateBulkActions();
+            });
+        }
+
+        // View Selected (single) - navigates to registration detail page or edit
+        if (viewButton) {
+            viewButton.addEventListener('click', function() {
+                const checkedBox = document.querySelector('.row-checkbox:checked');
+                if (checkedBox) {
+                    const registrationId = checkedBox.value;
+                    window.location.href = '/edit/event_registrations/' + registrationId;
+                }
+            });
+        }
+
+        // Edit Selected (single)
+        if (editButton) {
+            editButton.addEventListener('click', function() {
+                const checkedBox = document.querySelector('.row-checkbox:checked');
+                if (checkedBox) {
+                    const registrationId = checkedBox.value;
+                    window.location.href = '/edit/event_registrations/' + registrationId;
+                }
+            });
+        }
+
+        // Delete Selected (bulk)
+        if (document.getElementById('deleteSelected')) {
+            document.getElementById('deleteSelected').addEventListener('click', function() {
+                const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+                const ids = Array.from(checkedBoxes).map(cb => cb.value);
+                const count = ids.length;
+
+                if (count === 0) return;
+
+                let confirmMessage;
+                let finalMessage;
+
+                // Create messages to ask users if they would like to delete
+                if (count === 1) {
+                    const name = checkedBoxes[0].getAttribute('data-name');
+                    confirmMessage = `Are you sure you want to delete ${name}?`;
+                    finalMessage = `${name} deleted`;
+                } else {
+                    confirmMessage = `Are you sure you want to delete ${count} registrations?`;
+                    finalMessage = `${count} registrations deleted`;
+                }
+
+                showDeleteConfirmation(confirmMessage, async function() {
+                    const table = 'event_registrations'; // hardcoded per page
+
+                    try {
+                        // Call /delete/:table/:id for each selected id
+                        const responses = await Promise.all(
+                            ids.map(id =>
+                                fetch(`/delete/${table}/${id}`, {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json',
+                                        'Accept': 'application/json'
+                                    },
+                                    body: JSON.stringify({}) // body not used by route, can be empty
+                                })
+                            )
+                        );
+
+                        const allOk = responses.every(r => r.ok);
+
+                        if (!allOk) {
+                            console.error('Some delete requests failed:', responses);
+                            alert('Some registrations could not be deleted. Please check the console for details.');
+                            return;
+                        }
+
+                        const message = encodeURIComponent(finalMessage);
+                        const messageType = 'success';
+
+                        window.location.href = `/event_registrations?message=${message}&messageType=${messageType}`;
+
+                    } catch (err) {
+                        console.error('Error deleting registrations:', err);
+                        alert('There was an error deleting registrations. Please try again.');
+                    }
+                });
+            });
+        }
+
+        // Delete confirmation modal
+        function showDeleteConfirmation(message, onConfirm) {
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.id = 'deleteModal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Confirm Deletion</h3>
+                        <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p style="font-size: 1.1rem; color: #666;">${message}</p>
+                        <p style="margin-top: 1rem; color: #999;">This action cannot be undone.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-outline" onclick="closeDeleteModal()">Cancel</button>
+                        <button class="btn btn-danger" id="confirmDeleteBtn">Yes, Delete</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+                closeDeleteModal();
+                onConfirm();
+            });
+
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) closeDeleteModal();
+            });
+        }
+
+        function closeDeleteModal() {
+            const modal = document.getElementById('deleteModal');
+            if (modal) modal.remove();
+        }
+
+        // Clear Filters
+        if (document.getElementById('clearFilters')) {
+            document.getElementById('clearFilters').addEventListener('click', function() {
+                sessionStorage.removeItem('filtersVisible_event_registrations');
+                window.location.href = '/event_registrations';
+            });
+        }
+
+        // Auto-hide alerts
+        const alertMessages = document.querySelectorAll('.alert');
+        alertMessages.forEach(alert => {
+            setTimeout(() => {
+                alert.style.transition = 'opacity 0.5s';
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 500);
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

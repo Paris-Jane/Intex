@@ -1307,10 +1307,10 @@ app.get("/add/:table", async (req, res) => {
       .orderBy("event_name");
   }
 
-  // Load actual events for survey + event_registration + events pages
+  // Load actual events for survey + event_registrations + events pages
   if (
     table_name === "survey_results" ||
-    table_name === "event_registration" ||
+    table_name === "event_registrations" ||
     table_name === "events"
   ) {
     events = await knex("events")
@@ -1345,7 +1345,7 @@ app.get("/add/:table/:id", async (req, res) => {
   // Events list for dropdowns
   if (
     table_name === "survey_results" ||
-    table_name === "event_registration" ||
+    table_name === "event_registrations" ||
     table_name === "events"
   ) {
     events = await knex("events")
@@ -1378,6 +1378,8 @@ app.post("/add/:table", async (req, res) => {
     // Special case: survey_results should redirect to /surveys
     if (table_name === "survey_results") {
       res.redirect("/surveys");
+    } else if (table_name === "event_registrations") {
+      res.redirect("/event_registrations");
     } else {
       res.redirect(`/${table_name}`);
     }
@@ -1391,6 +1393,8 @@ app.post("/add/:table", async (req, res) => {
     // Special case: survey_results should redirect to /surveys
     if (table_name === "survey_results") {
       res.redirect("/surveys");
+    } else if (table_name === "event_registrations") {
+      res.redirect("/event_registrations");
     } else {
       res.redirect(`/${table_name}`);
     }
@@ -1408,7 +1412,7 @@ app.post("/delete/:table/:id", async (req, res) => {
     events: "event_id",
     survey_results: "survey_id",
     donations: "donation_id",
-    event_registration: "event_registration_id",
+    event_registrations: "event_registration_id",
   };
 
   const primaryKey = primaryKeyByTable[table];
@@ -1434,7 +1438,7 @@ app.get("/edit/:table/:id", async (req, res) => {
     events: "event_id",
     survey_results: "survey_id",
     donations: "donation_id",
-    event_registration: "event_registration_id",
+    event_registrations: "event_registration_id",
   };
 
   const primaryKey = primaryKeyByTable[table_name];
@@ -1475,7 +1479,7 @@ app.get("/edit/:table/:id", async (req, res) => {
     }
 
     if (
-      table_name === "event_registration" ||
+      table_name === "event_registrations" ||
       table_name === "survey_results" ||
       table_name === "events"
     ) {
@@ -1495,7 +1499,11 @@ app.get("/edit/:table/:id", async (req, res) => {
     console.error("Error fetching entry:", err.message);
     // Special case: survey_results should redirect to /surveys
     const redirectPath =
-      table_name === "survey_results" ? "/surveys" : `/${table_name}`;
+      table_name === "survey_results"
+        ? "/surveys"
+        : table_name === "event_registrations"
+        ? "/event_registrations"
+        : `/${table_name}`;
     res.redirect(redirectPath);
   }
 });
@@ -1512,7 +1520,7 @@ app.post("/edit/:table/:id", async (req, res) => {
     events: "event_id",
     survey_results: "survey_id",
     donations: "donation_id",
-    event_registration: "event_registration_id",
+    event_registrations: "event_registration_id",
   };
 
   const primaryKey = primaryKeyByTable[table_name];
@@ -1525,7 +1533,11 @@ app.post("/edit/:table/:id", async (req, res) => {
 
     // Special case: survey_results should redirect to /surveys
     const redirectPath =
-      table_name === "survey_results" ? "/surveys" : `/${table_name}`;
+      table_name === "survey_results"
+        ? "/surveys"
+        : table_name === "event_registrations"
+        ? "/event_registrations"
+        : `/${table_name}`;
     res.redirect(redirectPath);
   } catch (err) {
     console.log("Error updating record:", err.message);
@@ -1533,8 +1545,241 @@ app.post("/edit/:table/:id", async (req, res) => {
     req.session.flashType = "danger";
 
     const redirectPath =
-      table_name === "survey_results" ? "/surveys" : `/${table_name}`;
+      table_name === "survey_results"
+        ? "/surveys"
+        : table_name === "event_registrations"
+        ? "/event_registrations"
+        : `/${table_name}`;
     res.redirect(redirectPath);
+  }
+});
+
+// EVENT REGISTRATIONS MAINTENANCE PAGE:
+app.get("/event_registrations", async (req, res) => {
+  try {
+    // flash messages + query messages
+    const sessionData = req.session || {};
+    let message = sessionData.flashMessage || "";
+    let messageType = sessionData.flashType || "success";
+
+    sessionData.flashMessage = null;
+    sessionData.flashType = null;
+
+    // fallback to query params (for deletes)
+    if (!message && req.query.message) {
+      message = req.query.message;
+      messageType = req.query.messageType || "success";
+    }
+
+    // --- filtering/sorting code ---
+    let {
+      searchColumn,
+      searchValue,
+      eventNames,
+      months,
+      years,
+      registrationStatus,
+      registrationAttendedFlag,
+      sortColumn,
+      sortOrder,
+    } = req.query;
+
+    // defaults
+    searchColumn = searchColumn || "full_name";
+    sortOrder = sortOrder === "desc" ? "desc" : "asc";
+
+    // Base query with joins
+    let query = knex("event_registrations as er")
+      .join("participants as p", "er.participant_id", "p.participant_id")
+      .join("events as e", "er.event_id", "e.event_id")
+      .select(
+        "er.event_registration_id",
+        "er.participant_id",
+        "er.event_id",
+        "er.registration_status",
+        "er.registration_attended_flag",
+        "er.registration_created_at_date",
+        "er.registration_created_at_time",
+        "er.registration_check_in_date",
+        "er.registration_check_in_time",
+        "p.participant_first_name",
+        "p.participant_last_name",
+        "e.event_name",
+        "e.event_date"
+      );
+
+    // Case-insensitive search
+    if (searchValue && searchColumn) {
+      const term = searchValue.trim();
+      if (term) {
+        if (searchColumn === "full_name") {
+          // Handle full name like "Jane", "Doe", or "Jane Doe Smith"
+          const parts = term.split(/\s+/);
+
+          if (parts.length === 1) {
+            // One word -> match either first OR last name
+            const likeOne = `%${parts[0]}%`;
+            query.where(function () {
+              this.where("p.participant_first_name", "ilike", likeOne).orWhere(
+                "p.participant_last_name",
+                "ilike",
+                likeOne
+              );
+            });
+          } else {
+            // Multiple words -> first piece as first name, last piece as last name
+            const firstLike = `%${parts[0]}%`;
+            const lastLike = `%${parts[parts.length - 1]}%`;
+
+            query.where(function () {
+              this.where(
+                "p.participant_first_name",
+                "ilike",
+                firstLike
+              ).andWhere("p.participant_last_name", "ilike", lastLike);
+            });
+          }
+        } else if (searchColumn === "participant_first_name") {
+          query.whereRaw(`CAST(p.participant_first_name AS TEXT) ILIKE ?`, [
+            `%${term}%`,
+          ]);
+        } else if (searchColumn === "participant_last_name") {
+          query.whereRaw(`CAST(p.participant_last_name AS TEXT) ILIKE ?`, [
+            `%${term}%`,
+          ]);
+        } else if (searchColumn === "event_name") {
+          query.whereRaw(`CAST(e.event_name AS TEXT) ILIKE ?`, [`%${term}%`]);
+        }
+      }
+    }
+
+    // Event Names filter
+    const eventNameArr = paramToArray(eventNames);
+    if (!eventNameArr.includes("all")) {
+      query.whereIn("e.event_name", eventNameArr);
+    }
+
+    // Months filter (extract month from event_date)
+    const monthArr = paramToArray(months);
+    if (!monthArr.includes("all")) {
+      const monthNums = monthArr
+        .map((m) => parseInt(m))
+        .filter((m) => !isNaN(m));
+      if (monthNums.length > 0) {
+        query.whereRaw("EXTRACT(MONTH FROM e.event_date) IN (?)", [monthNums]);
+      }
+    }
+
+    // Years filter (extract year from event_date)
+    const yearArr = paramToArray(years);
+    if (!yearArr.includes("all")) {
+      const yearNums = yearArr.map((y) => parseInt(y)).filter((y) => !isNaN(y));
+      if (yearNums.length > 0) {
+        query.whereRaw("EXTRACT(YEAR FROM e.event_date) IN (?)", [yearNums]);
+      }
+    }
+
+    // Registration Status filter
+    const statusArr = paramToArray(registrationStatus);
+    if (!statusArr.includes("all")) {
+      query.whereIn("er.registration_status", statusArr);
+    }
+
+    // Registration Attended Flag filter
+    const attendedArr = paramToArray(registrationAttendedFlag);
+    if (!attendedArr.includes("all")) {
+      const flagNums = attendedArr
+        .map((f) => parseInt(f))
+        .filter((f) => !isNaN(f));
+      if (flagNums.length > 0) {
+        query.whereIn("er.registration_attended_flag", flagNums);
+      }
+    }
+
+    // Sorting
+    if (sortColumn) {
+      if (
+        sortColumn === "participant_first_name" ||
+        sortColumn === "participant_last_name"
+      ) {
+        query.orderBy(`p.${sortColumn}`, sortOrder);
+      } else if (sortColumn === "event_name" || sortColumn === "event_date") {
+        query.orderBy(`e.${sortColumn}`, sortOrder);
+      } else {
+        query.orderBy(`er.${sortColumn}`, sortOrder);
+      }
+    } else {
+      // Default sort by event_date descending
+      query.orderBy("e.event_date", "desc");
+    }
+
+    // Get distinct years and event names for filter options
+    const availableYearsPromise = knex("events")
+      .select(knex.raw("DISTINCT EXTRACT(YEAR FROM event_date) as year"))
+      .whereNotNull("event_date")
+      .orderBy("year", "desc");
+
+    const eventNameOptionsPromise = knex("events")
+      .distinct("event_name")
+      .orderBy("event_name");
+
+    // Execute queries in parallel
+    const [results, yearRows, eventNameRows] = await Promise.all([
+      query,
+      availableYearsPromise,
+      eventNameOptionsPromise,
+    ]);
+
+    // Extract years from results
+    const availableYears = yearRows
+      .map((r) => Math.floor(parseFloat(r.year)))
+      .filter((y) => !isNaN(y))
+      .sort((a, b) => b - a);
+
+    const eventNameOptions = eventNameRows
+      .map((r) => r.event_name)
+      .filter(Boolean);
+
+    const filters = {
+      searchColumn,
+      searchValue: searchValue || "",
+      eventNames: eventNameArr,
+      months: monthArr,
+      years: yearArr,
+      registrationStatus: statusArr,
+      registrationAttendedFlag: attendedArr,
+      sortColumn: sortColumn || "",
+      sortOrder,
+      availableYears,
+      eventNameOptions,
+    };
+
+    res.render("event_registrations", {
+      eventRegistrations: results,
+      message,
+      messageType,
+      filters,
+    });
+  } catch (err) {
+    console.error("Error loading event registrations:", err);
+    res.render("event_registrations", {
+      eventRegistrations: [],
+      message: "Error loading event registrations",
+      messageType: "danger",
+      filters: {
+        searchColumn: "full_name",
+        searchValue: "",
+        eventNames: ["all"],
+        months: ["all"],
+        years: ["all"],
+        registrationStatus: ["all"],
+        registrationAttendedFlag: ["all"],
+        sortColumn: "",
+        sortOrder: "asc",
+        availableYears: [],
+        eventNameOptions: [],
+      },
+    });
   }
 });
 
