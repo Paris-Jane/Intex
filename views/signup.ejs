@@ -1,0 +1,254 @@
+<!--Paris Ward, Lucas Moraes, Joshua Ethington, Parker Sandstrom-->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Ella Rises</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo">
+                <a href="/"><img src="/images/logo.png" alt="Ella Rises Logo"> ELLA RISES</a>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/">Home</a></li>
+                <li><a href="/about">About</a></li>
+                <li><a href="/performance">Performance</a></li>
+                <li><a href="/calendar">Calendar</a></li>
+                <li><a href="/donate_now">Donate Now</a></li>
+
+                <% if (isLoggedIn && userId) { %>
+                    <li><a href="/profile/<%= userId %>">Profile</a></li>
+                <% } %>
+
+                <% if (role === "admin") { %>
+                    <li class="dropdown">
+                        <span class="dropdown-toggle">
+                            <a href="#" class="selected-nav">Pages ▾</a>
+                        </span>
+                        <ul class="dropdown-menu">
+                            <li><a href="/participants">Participants</a></li>
+                            <li><a href="/events">Events</a></li>
+                            <li><a href="/event_registrations">Event Registrations</a></li>
+                            <li><a href="/surveys">Surveys</a></li>
+                            <li><a href="/milestones">Milestones</a></li>
+                            <li><a href="/donations">Donations</a></li>
+                        </ul>
+                    </li>
+                <% } %>
+
+                <% if (isLoggedIn) { %>
+                    <li><a href="/logout" class="login-btn">Logout</a></li>
+                <% } else { %>
+                    <li><a href="/login" class="login-btn">Login</a></li>
+                <% } %>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero hero-compact">
+        <div class="hero-content">
+            <h1>Sign up now</h1>
+            <p class="hero-subtitle">Fill in the details below to create a new account.</p>
+        </div>
+    </section>
+
+    <!--Main Content-->
+    <div class="container">
+        <div class="add-card">
+            <form id="addForm" class="modern-form" action="/signup" method="POST">
+                <div class="form-section">
+                    <h2 class="section-title">Basic Information</h2>
+                    <p class="section-description">Enter the your personal details</p>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">First Name <span class="required">*</span></label>
+                            <input type="text" class="form-input" name="participant_first_name" placeholder="John" required autofocus>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Last Name <span class="required">*</span></label>
+                            <input type="text" class="form-input" name="participant_last_name" placeholder="Doe" required>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Username <span class="required">*</span></label>
+                            <input type="text" class="form-input" name="participant_username" placeholder="jdoe" required>
+                            <span class="form-hint">Used for login</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Password <span class="required">*</span></label>
+                            <input type="password" class="form-input" name="participant_password" placeholder="••••••••" required>
+                            <span class="form-hint">Minimum 8 characters</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <input type="hidden" name="participant_role" value="participant">    
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="section-title">Contact Details</h2>
+                    <p class="section-description">How can we reach this participant?</p>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Phone Number <span class="required">*</span></label>
+                            <input type="tel" class="form-input" name="participant_phone" placeholder="(123) 456-7890" pattern="[0-9]{10}" required>
+                            <span class="form-hint">10 digits, no formatting</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Email Address <span class="required">*</span></label>
+                            <input type="email" class="form-input" name="participant_email" placeholder="example@email.com" required>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="section-title">Location & Background</h2>
+                    <p class="section-description">Tell us more about the participant</p>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">City <span class="required">*</span></label>
+                            <input list="cities" class="form-input" name="participant_city" placeholder="Select or type city" required>
+                            <datalist id="cities">
+                                <option value="Bountiful">
+                                <option value="Draper">
+                                <option value="Layton">
+                                <option value="Lehi">
+                                <option value="Logan">
+                                <option value="Murray">
+                                <option value="Ogden">
+                                <option value="Orem">
+                                <option value="Pleasant Grove">
+                                <option value="Provo">
+                                <option value="Riverton">
+                                <option value="Salt Lake City">
+                                <option value="Sandy">
+                                <option value="Spanish Fork">
+                                <option value="St. George">
+                                <option value="Taylorsville">
+                                <option value="West Jordan">
+                                <option value="West Valley City">
+                            </datalist>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Zip Code <span class="required">*</span></label>
+                            <input type="text" class="form-input" name="participant_zip" placeholder="84601" pattern="[0-9]{5}" maxlength="5" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">School or Employer</label>
+                        <input type="text" class="form-input" name="participant_school_or_employer" placeholder="e.g., BYU, Tech Company">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Date of Birth<span class="required">*</span></label>
+                        <input type="date" class="form-input" name="participant_dob" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Field of Interest</label>
+                        <div class="radio-group radio-group-inline">
+                            <label class="radio-label">
+                                <input type="radio" name="participant_field_of_interest" value="STEM">
+                                <span class="radio-custom"></span>
+                                <span class="radio-text"><strong>STEM</strong></span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="participant_field_of_interest" value="Arts">
+                                <span class="radio-custom"></span>
+                                <span class="radio-text"><strong>Arts</strong></span>
+                            </label>
+                            <label class="radio-label">
+                                <input type="radio" name="participant_field_of_interest" value="Both">
+                                <span class="radio-custom"></span>
+                                <span class="radio-text"><strong>Both</strong></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <a href="/" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Sign Up Now</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2025 Ella Rises. All Rights Reserved.</p>
+        <p style="margin-top: 1rem; font-size: 0.9rem;">Making a difference, one woman at a time.</p>
+    </footer>
+
+    <script>
+        // ---------------- NAV DROPDOWN ----------------
+        let dropdownTimeout;
+        const dropdown = document.querySelector('.dropdown');
+        const dropdownMenu = document.querySelector('.dropdown-menu');
+
+        if (dropdown && dropdownMenu) {
+            dropdown.addEventListener('mouseenter', function() {
+                clearTimeout(dropdownTimeout);
+                dropdownMenu.style.display = 'block';
+            });
+
+            dropdown.addEventListener('mouseleave', function() {
+                dropdownTimeout = setTimeout(function() {
+                    dropdownMenu.style.display = 'none';
+                }, 200);
+            });
+
+            dropdownMenu.addEventListener('mouseenter', function() {
+                clearTimeout(dropdownTimeout);
+                dropdownMenu.style.display = 'block';
+            });
+
+            dropdownMenu.addEventListener('mouseleave', function() {
+                dropdownTimeout = setTimeout(function() {
+                    dropdownMenu.style.display = 'none';
+                }, 200);
+            });
+        }
+
+        // current date
+        (function () {
+            const now = new Date();
+            const date = now.toISOString().slice(0, 10);      // YYYY-MM-DD
+            const time = now.toTimeString().slice(0, 8);      // HH:MM:SS
+
+            document.getElementById('submission_date').value = date;
+            document.getElementById('submitssion_time').value = time;
+        })();
+
+        // ---------------- FORM ANIMATIONS ----------------
+        const formInputs = document.querySelectorAll('.form-input, .form-select');
+        formInputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            input.addEventListener('blur', function() {
+                this.parentElement.classList.remove('focused');
+            });
+        });
+    </script>
+</body>
+</html>
