@@ -88,8 +88,7 @@ app.use((req, res, next) => {
     req.path === "/calendar" ||
     req.path === "/donate_now" ||
     req.path === "/login" ||
-    req.path === "/logout" ||
-    req.path === "/favicon.ico"
+    req.path === "/logout"
   ) {
     //continue with the request path
     return next();
@@ -1782,11 +1781,6 @@ app.get("/event_registrations", async (req, res) => {
       },
     });
   }
-});
-
-// Handle favicon requests (prevents 404 errors)
-app.get("/favicon.ico", (req, res) => {
-  res.status(204).end();
 });
 
 // START TO LISTEN (& tell command line)
