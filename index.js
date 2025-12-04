@@ -1326,7 +1326,7 @@ app.get("/add/:table", async (req, res) => {
 
 
 // Route that will display an "Add entry" form with user id filled out (called from the profile pages)
-aapp.get("/add/:table/:id", async (req, res) => {
+app.get("/add/:table/:id", async (req, res) => {
   const table_name = req.params.table;
   const pass_id = req.params.id;
 
