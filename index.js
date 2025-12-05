@@ -2395,82 +2395,53 @@ app.get("/profile-add/milestones/:userId", async (req, res) => {
   });
 });
 
-// Participant-facing route to add their own survey results (optional prefill)
-app.get("/profile-add/survey_results/:eventRegistrationId?", async (req, res) => {
-  const eventRegistrationId = req.params.eventRegistrationId
-    ? parseInt(req.params.eventRegistrationId, 10)
-    : null;
+// Participant-facing route to add their own survey results (requires registration)
+app.get("/profile-add/survey_results/:eventRegistrationId", async (req, res) => {
+  const eventRegistrationId = parseInt(req.params.eventRegistrationId, 10);
+  if (!Number.isInteger(eventRegistrationId)) {
+    return res.status(400).send("Invalid event registration id.");
+  }
 
-  let survey_prefill = null;
-  let pass_id = null;
-  let events = [];
+  const registration = await knex("event_registrations as er")
+    .join("events as e", "er.event_id", "e.event_id")
+    .where("er.event_registration_id", eventRegistrationId)
+    .select(
+      "er.event_registration_id",
+      "er.user_id",
+      "er.event_id",
+      "e.event_name",
+      "e.event_date",
+      "e.event_start_time",
+      "e.event_end_time"
+    )
+    .first();
 
-  if (eventRegistrationId) {
-    if (!Number.isInteger(eventRegistrationId)) {
-      return res.status(400).send("Invalid event registration id.");
-    }
+  if (!registration) {
+    return res.status(404).send("Event registration not found.");
+  }
 
-    const registration = await knex("event_registrations as er")
-      .join("events as e", "er.event_id", "e.event_id")
-      .where("er.event_registration_id", eventRegistrationId)
-      .select(
-        "er.event_registration_id",
-        "er.user_id",
-        "er.event_id",
-        "e.event_name",
-        "e.event_date",
-        "e.event_start_time",
-        "e.event_end_time"
-      )
-      .first();
+  if (!requireSelfOrAdmin(req, res, registration.user_id)) return;
 
-    if (!registration) {
-      return res.status(404).send("Event registration not found.");
-    }
-
-    if (!requireSelfOrAdmin(req, res, registration.user_id)) return;
-
-    pass_id = registration.user_id;
-    survey_prefill = {
-      event_registration_id: registration.event_registration_id,
+  const events = [
+    {
       event_id: registration.event_id,
       event_name: registration.event_name,
-    };
-
-    events = [
-      {
-        event_id: registration.event_id,
-        event_name: registration.event_name,
-        event_date: registration.event_date,
-        event_start_time: registration.event_start_time,
-        event_end_time: registration.event_end_time,
-      },
-    ];
-  } else {
-    if (!req.session.isLoggedIn) {
-      req.session.returnTo = req.originalUrl || req.url;
-      return res.render("login", {
-        error_message: "Please log in to access this page",
-      });
-    }
-    pass_id = req.session.user?.id || null;
-    events = await knex("events")
-      .select(
-        "event_id",
-        "event_name",
-        "event_date",
-        "event_start_time",
-        "event_end_time"
-      )
-      .orderBy(["event_name", "event_date", "event_start_time"]);
-  }
+      event_date: registration.event_date,
+      event_start_time: registration.event_start_time,
+      event_end_time: registration.event_end_time,
+    },
+  ];
 
   res.render("add", {
     table_name: "survey_results",
     events,
     event_types: [],
-    pass_id,
-    survey_prefill,
+    pass_id: registration.user_id,
+    survey_prefill: {
+      event_registration_id: registration.event_registration_id,
+      event_id: registration.event_id,
+      event_name: registration.event_name,
+    },
   });
 });
 
@@ -2548,11 +2519,24 @@ app.post("/profile-add/milestones/:userId", async (req, res) => {
   }
 });
 
-// Participant-facing route to submit their own survey results (prefill optional)
-app.post("/profile-add/survey_results", async (req, res) => {
+// Participant-facing route to submit their own survey results (requires registration id)
+app.post("/profile-add/survey_results/:eventRegistrationId", async (req, res) => {
+  const eventRegistrationId = parseInt(req.params.eventRegistrationId, 10);
+  if (!Number.isInteger(eventRegistrationId)) {
+    return res.status(400).send("Invalid event registration id.");
+  }
+
+  const registration = await knex("event_registrations")
+    .where("event_registration_id", eventRegistrationId)
+    .first();
+
+  if (!registration) {
+    return res.status(404).send("Event registration not found.");
+  }
+
+  if (!requireSelfOrAdmin(req, res, registration.user_id)) return;
+
   const {
-    event_registration_id,
-    event_id,
     survey_satisfaction_score,
     survey_usefulness_score,
     survey_instructor_score,
@@ -2562,43 +2546,11 @@ app.post("/profile-add/survey_results", async (req, res) => {
     survey_comments,
   } = req.body;
 
-  let eventRegIdParsed = parseInt(event_registration_id, 10);
-  let registration = null;
-
-  if (Number.isInteger(eventRegIdParsed)) {
-    registration = await knex("event_registrations")
-      .where("event_registration_id", eventRegIdParsed)
-      .first();
-  }
-
-  // If no prefilled registration, try to find one by user + event_id
-  if (!registration) {
-    const userIdFromSession = req.session.user?.id;
-    const eventIdParsed = parseInt(event_id, 10);
-    if (!Number.isInteger(userIdFromSession) || !Number.isInteger(eventIdParsed)) {
-      return res.status(400).send("Invalid event selection.");
-    }
-
-    registration = await knex("event_registrations")
-      .where("user_id", userIdFromSession)
-      .where("event_id", eventIdParsed)
-      .orderBy("registration_created_at_date", "desc")
-      .first();
-
-    if (!registration) {
-      return res.status(404).send("No matching event registration found for this user.");
-    }
-
-    eventRegIdParsed = registration.event_registration_id;
-  }
-
-  if (!requireSelfOrAdmin(req, res, registration.user_id)) return;
-
   const { date, time } = nowDate();
 
   try {
     await knex("survey_results").insert({
-      event_registration_id: eventRegIdParsed,
+      event_registration_id: eventRegistrationId,
       survey_satisfaction_score,
       survey_usefulness_score,
       survey_instructor_score,

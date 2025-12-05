@@ -552,7 +552,7 @@
 
             <!-- Add-survey response Form -->
             <%} else if (table_name === "survey_results"){%>
-                <form id="addForm" class="modern-form" action="<%= pass_id ? '/profile-add/survey_results' : '/add/survey_results' %>" method="POST">
+                <form id="addForm" class="modern-form" action="<%= survey_prefill ? `/profile-add/survey_results/${survey_prefill.event_registration_id}` : '/add/survey_results' %>" method="POST">
                     <!--Gather participant ID (if not passed along by route)-->
                     <% if (!pass_id) { %>
                     <div class="form-section">
@@ -568,7 +568,7 @@
                     <%} else {%>
                         <input type="hidden" name="user_id" value="<%= pass_id %>">
                     <%};%>
-                    <% if (survey_prefill && survey_prefill.event_registration_id) { %>
+                                <% if (survey_prefill && survey_prefill.event_registration_id) { %>
                         <input type="hidden" name="event_registration_id" value="<%= survey_prefill.event_registration_id %>">
                     <% } %>
 
