@@ -2727,6 +2727,7 @@ app.get("/event_registrations", requireAdmin, async (req, res) => {
     }
 
     // Get distinct years and event names for filter options
+    // These queries are independent of the main filter query to always show all available options
     const availableYearsPromise = knex("events")
       .select(knex.raw("DISTINCT EXTRACT(YEAR FROM event_date) as year"))
       .whereNotNull("event_date")
@@ -2743,15 +2744,20 @@ app.get("/event_registrations", requireAdmin, async (req, res) => {
       eventNameOptionsPromise,
     ]);
 
-    // Extract years from results
-    const availableYears = yearRows
-      .map((r) => Math.floor(parseFloat(r.year)))
-      .filter((y) => !isNaN(y))
+    // Extract years from results - ensure they're numbers and unique
+    const availableYears = (yearRows || [])
+      .map((r) => {
+        const year = r?.year;
+        return year ? Math.floor(parseFloat(year)) : null;
+      })
+      .filter((y) => y !== null && !isNaN(y))
+      .filter((y, index, self) => self.indexOf(y) === index) // Remove duplicates
       .sort((a, b) => b - a);
 
     const eventNameOptions = eventNameRows
       .map((r) => r.event_name)
-      .filter(Boolean);
+      .filter(Boolean)
+      .filter((name, index, self) => self.indexOf(name) === index); // Remove duplicates
 
     const filters = {
       searchColumn,
@@ -2763,8 +2769,8 @@ app.get("/event_registrations", requireAdmin, async (req, res) => {
       registrationAttendedFlag: attendedArr,
       sortColumn: sortColumn || "",
       sortOrder,
-      availableYears,
-      eventNameOptions,
+      availableYears: availableYears || [],
+      eventNameOptions: eventNameOptions || [],
     };
 
     res.render("event_registrations", {

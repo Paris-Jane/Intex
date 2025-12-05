@@ -183,11 +183,15 @@
                                     <label class="filter-checkbox-label">
                                         <input type="checkbox" name="years" value="all" class="year-checkbox" <%= isYearAll ? 'checked' : '' %>> All
                                     </label>
-                                    <% availableYears.forEach(year => { %>
-                                        <label class="filter-checkbox-label">
-                                            <input type="checkbox" name="years" value="<%= year %>" class="year-checkbox" <%= yearFilters.includes(String(year)) ? 'checked' : '' %>> <%= year %>
-                                        </label>
-                                    <% }); %>
+                                    <% if (availableYears && availableYears.length > 0) { %>
+                                        <% availableYears.forEach(year => { %>
+                                            <label class="filter-checkbox-label">
+                                                <input type="checkbox" name="years" value="<%= year %>" class="year-checkbox" <%= yearFilters.includes(String(year)) || yearFilters.includes(year) ? 'checked' : '' %>> <%= year %>
+                                            </label>
+                                        <% }); %>
+                                    <% } else { %>
+                                        <p style="color: #999; padding: 0.5rem;">No years available</p>
+                                    <% } %>
                                 </div>
                             </div>
 
