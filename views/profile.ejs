@@ -28,19 +28,19 @@
           </div>
           <ul class="nav-links">
               <li><a href="/">Home</a></li>
-              <li><a href="/about" class="selected-nav">About</a></li>
+              <li><a href="/about">About</a></li>
               <li><a href="/performance">Performance</a></li>
               <li><a href="/calendar">Calendar</a></li>
               <li><a href="/donate_now">Donate Now</a></li>
 
               <% if (isLoggedIn && userId) { %>
-                  <li><a href="/profile/<%= userId %>">Profile</a></li>
+                  <li><a href="/profile/<%= userId %>"  class="selected-nav">Profile</a></li>
               <% } %>
 
               <% if (role === "admin") { %>
                   <li class="dropdown">
                       <span class="dropdown-toggle">
-                          <a href="#">Pages ▾</a>
+                          <a href="#" >Pages ▾</a>
                       </span>
                       <ul class="dropdown-menu">
                           <li><a href="/users">Users</a></li>
@@ -187,7 +187,6 @@
                     <% upcomingEvents.forEach(function(event) { %>
                         <div
                        class="dashboard-event-item"
-                        onclick="showEventDetailsModal('<%= event.event_name.replace(/'/g, "\\'") %>', '<%= (event.event_date ? new Date(event.event_date).toLocaleDateString() : "N/A") %>', '<%= event.event_start_time || "N/A" %>', '<%= event.event_end_time || "N/A" %>', '<%= event.event_location ? event.event_location.replace(/'/g, "\\'") : "N/A" %>', 'No additional details available.')"
                         >
                         <div class="dashboard-event-icon">▶</div>
                         <div class="dashboard-event-info">
