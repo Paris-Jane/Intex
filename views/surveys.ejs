@@ -361,7 +361,7 @@
                             <span id="selectedCount" style="font-weight: 600; color: #666;">0 selected</span>
                         </div>
                         <div class="flex gap-2">
-                            <button class="btn btn-secondary btn-small" id="editSelected"> Edit </button>
+                            <button class="btn btn-secondary btn-small" id="editSelected" style="display: none;"> Edit </button>
                             <button class="btn btn-danger btn-small" id="deleteSelected"> Delete Selected </button>
                             <button class="btn btn-outline btn-small" id="clearSelection"> Clear Selection</button>
                         </div>
@@ -778,11 +778,13 @@
         const selectedCountSpan = document.getElementById('selectedCount');
         const editButton = document.getElementById('editSelected');
 
-        selectAllCheckbox.addEventListener('change', function() {
-            const rowCheckboxes = document.querySelectorAll('.row-checkbox');
-            rowCheckboxes.forEach(checkbox => checkbox.checked = this.checked);
-            updateBulkActions();
-        });
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function() {
+                const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+                rowCheckboxes.forEach(checkbox => checkbox.checked = this.checked);
+                updateBulkActions();
+            });
+        }
 
         document.addEventListener('change', function(e) {
             if (e.target.classList.contains('row-checkbox')) {
@@ -794,33 +796,39 @@
             const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
             const count = checkedBoxes.length;
 
-            if (count > 0) {
+            if (count > 0 && bulkActionsBar) {
                 bulkActionsBar.style.display = 'block';
-                selectedCountSpan.textContent = count + ' selected';
-                editButton.style.display = count === 1 ? 'inline-block' : 'none';
+                if (selectedCountSpan) selectedCountSpan.textContent = count + ' selected';
+                if (editButton) editButton.style.display = count === 1 ? 'inline-block' : 'none';
             } else {
-                bulkActionsBar.style.display = 'none';
-                editButton.style.display = 'none';
+                if (bulkActionsBar) bulkActionsBar.style.display = 'none';
+                if (editButton) editButton.style.display = 'none';
             }
 
             const rowCheckboxes = document.querySelectorAll('.row-checkbox');
-            selectAllCheckbox.checked = count === rowCheckboxes.length && count > 0;
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = count === rowCheckboxes.length && count > 0;
+            }
         }
 
-        document.getElementById('clearSelection').addEventListener('click', function() {
-            document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
-            selectAllCheckbox.checked = false;
-            updateBulkActions();
-        });
+        if (document.getElementById('clearSelection')) {
+            document.getElementById('clearSelection').addEventListener('click', function() {
+                document.querySelectorAll('.row-checkbox').forEach(cb => cb.checked = false);
+                if (selectAllCheckbox) selectAllCheckbox.checked = false;
+                updateBulkActions();
+            });
+        }
 
         // Edit Selected (single)
-        document.getElementById('editSelected').addEventListener('click', function() {
-            const checkedBox = document.querySelector('.row-checkbox:checked');
-            if (checkedBox) {
-                const surveyId = checkedBox.value;
-                window.location.href = '/edit/survey_results/' + surveyId;
-            }
-        });
+        if (editButton) {
+            editButton.addEventListener('click', function() {
+                const checkedBox = document.querySelector('.row-checkbox:checked');
+                if (checkedBox) {
+                    const surveyId = checkedBox.value;
+                    window.location.href = '/edit/survey_results/' + surveyId;
+                }
+            });
+        }
 
         // Delete Selected (bulk)
         if (document.getElementById('deleteSelected')) {
