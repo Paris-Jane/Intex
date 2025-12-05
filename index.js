@@ -927,11 +927,17 @@ app.get("/profile/:id", async (req, res) => {
 
 // PROFILE EDIT ROUTE (called from profile page)
 app.get("/profile-edit/:table/:id", async (req, res) => {
-  const table_name = req.params.table;
+  let table_name = req.params.table;
   const id = req.params.id;
+
+  // Backward compatibility: map old "participants" to "users"
+  if (table_name === "participants") {
+    table_name = "users";
+  }
 
   const primaryKeyByTable = {
     users: "user_id",
+    participants: "user_id", // backward compatibility
     milestones: "milestone_id",
     events: "event_id",
     survey_results: "survey_id",
@@ -1011,12 +1017,18 @@ app.get("/profile-edit/:table/:id", async (req, res) => {
 
 // PROFILE UPDATE ROUTE (called from edit page when editing from profile)
 app.post("/profile-edit/:table/:id", async (req, res) => {
-  const table_name = req.params.table;
+  let table_name = req.params.table;
   const id = req.params.id;
   const updatedData = req.body;
 
+  // Backward compatibility: map old "participants" to "users"
+  if (table_name === "participants") {
+    table_name = "users";
+  }
+
   const primaryKeyByTable = {
     users: "user_id",
+    participants: "user_id", // backward compatibility
     milestones: "milestone_id",
     events: "event_id",
     survey_results: "survey_id",
@@ -1054,10 +1066,16 @@ app.post("/profile-edit/:table/:id", async (req, res) => {
 
 // PROFILE DELETE ROUTE (called from profile page)
 app.post("/profile-delete/:table/:id", async (req, res) => {
-  const { table, id } = req.params;
+  let { table, id } = req.params;
+
+  // Backward compatibility: map old "participants" to "users"
+  if (table === "participants") {
+    table = "users";
+  }
 
   const primaryKeyByTable = {
     users: "user_id",
+    participants: "user_id", // backward compatibility
     milestones: "milestone_id",
     events: "event_id",
     survey_results: "survey_id",
@@ -1068,7 +1086,7 @@ app.post("/profile-delete/:table/:id", async (req, res) => {
   const primaryKey = primaryKeyByTable[table];
 
   try {
-    // Special handling for deleting the user's own account (participants table)
+    // Special handling for deleting the user's own account (users table)
     if (table === "users" && parseInt(id) === req.session.user.id) {
       // Delete the participant
       await knex(table).where(primaryKey, id).del();
@@ -2187,7 +2205,12 @@ app.get("/donations", async (req, res) => {
 // ADD ENTRY PAGE:
 // Route that will display a completely empty form to "Add entry" (called from the database pages)
 app.get("/add/:table", async (req, res) => {
-  const table_name = req.params.table;
+  let table_name = req.params.table;
+
+  // Backward compatibility: map old "participants" to "users"
+  if (table_name === "participants") {
+    table_name = "users";
+  }
 
   let events = [];
   let event_types = [];
@@ -2221,8 +2244,13 @@ app.get("/add/:table", async (req, res) => {
 
 // Route that will display an "Add entry" form with user id filled out (called from the profile pages)
 app.get("/add/:table/:id", async (req, res) => {
-  const table_name = req.params.table;
+  let table_name = req.params.table;
   const pass_id = req.params.id;
+
+  // Backward compatibility: map old "participants" to "users"
+  if (table_name === "participants") {
+    table_name = "users";
+  }
 
   let events = [];
   let event_types = [];
@@ -2256,8 +2284,13 @@ app.get("/add/:table/:id", async (req, res) => {
 
 // Route that adds the form inputs to the databases
 app.post("/add/:table", async (req, res) => {
-  const table_name = req.params.table;
+  let table_name = req.params.table;
   const newData = req.body;
+
+  // Backward compatibility: map old "participants" to "users"
+  if (table_name === "participants") {
+    table_name = "users";
+  }
 
   try {
     await knex(table_name).insert(newData);
@@ -2296,11 +2329,16 @@ app.post("/add/:table", async (req, res) => {
 // DELETE FUNCTIONALITY:
 // route that occurs when delete button is pressed
 app.post("/delete/:table/:id", async (req, res) => {
-  const { table, id } = req.params;
+  let { table, id } = req.params;
+
+  // Backward compatibility: map old "participants" to "users"
+  if (table === "participants") {
+    table = "users";
+  }
 
   const primaryKeyByTable = {
     users: "user_id",
-    users: "user_id", // backward compatibility
+    participants: "user_id", // backward compatibility
     milestones: "milestone_id",
     events: "event_id",
     survey_results: "survey_id",
@@ -2322,12 +2360,17 @@ app.post("/delete/:table/:id", async (req, res) => {
 // EDIT FUNCTIONALITY
 // route to display the "edit ____" page
 app.get("/edit/:table/:id", async (req, res) => {
-  const table_name = req.params.table;
+  let table_name = req.params.table;
   const id = req.params.id;
+
+  // Backward compatibility: map old "participants" to "users"
+  if (table_name === "participants") {
+    table_name = "users";
+  }
 
   const primaryKeyByTable = {
     users: "user_id",
-    users: "user_id", // backward compatibility
+    participants: "user_id", // backward compatibility
     milestones: "milestone_id",
     events: "event_id",
     survey_results: "survey_id",
@@ -2404,13 +2447,18 @@ app.get("/edit/:table/:id", async (req, res) => {
 
 // Route that updates the "entry" to the databases
 app.post("/edit/:table/:id", async (req, res) => {
-  const table_name = req.params.table;
+  let table_name = req.params.table;
   const id = req.params.id;
   const updatedData = req.body;
 
+  // Backward compatibility: map old "participants" to "users"
+  if (table_name === "participants") {
+    table_name = "users";
+  }
+
   const primaryKeyByTable = {
     users: "user_id",
-    users: "user_id", // backward compatibility
+    participants: "user_id", // backward compatibility
     milestones: "milestone_id",
     events: "event_id",
     survey_results: "survey_id",
