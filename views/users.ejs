@@ -756,7 +756,8 @@
         });
 
         // Delete Selected (bulk)
-        document.getElementById('deleteSelected').addEventListener('click', function() {
+        if (document.getElementById('deleteSelected')) {
+            document.getElementById('deleteSelected').addEventListener('click', function() {
             const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
             const ids = Array.from(checkedBoxes).map(cb => cb.value);
             const count = ids.length;
@@ -814,6 +815,7 @@
                 }
             });
         });
+        }
 
 
         // Delete confirmation modal

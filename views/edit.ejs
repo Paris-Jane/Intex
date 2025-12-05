@@ -432,7 +432,7 @@
                         <div class="form-group">
                             <label class="form-label">Event Date & Time <span class="required">*</span></label>
                             <select class="form-select" name="event_id" id="eventInstanceSelect" required>
-                                <option value=""><%= info.event_id ? 'Select a Date/Time' : 'Select an event above first' %></option>
+                                <option value="">Select an event above first</option>
                             </select>
                         </div>
                     </div>
@@ -788,42 +788,8 @@
                         
                         <div class="form-group">
                             <label class="form-label">Event Date & Time <span class="required">*</span></label>
-                            <select class="form-select" name="event_id" id="eventInstanceSelect" required>
-                                <option value="">Select an Event</option>
-                                <% events.forEach(ev => { %>
-                                    <% 
-                                        let formattedDate = '';
-                                        if (ev.event_date) {
-                                            const date = new Date(ev.event_date);
-                                            const month = String(date.getMonth() + 1).padStart(2, '0');
-                                            const day = String(date.getDate()).padStart(2, '0');
-                                            const year = date.getFullYear();
-                                            formattedDate = `${month}/${day}/${year}`;
-                                        }
-                                        
-                                        function formatTime(timeString) {
-                                            if (!timeString) return '';
-                                            if (timeString.includes('AM') || timeString.includes('PM')) return timeString;
-                                            const timeParts = timeString.toString().split(':');
-                                            let hours = parseInt(timeParts[0]);
-                                            const minutes = timeParts[1] || '00';
-                                            const ampm = hours >= 12 ? 'PM' : 'AM';
-                                            hours = hours % 12;
-                                            hours = hours ? hours : 12;
-                                            return `${hours}:${minutes} ${ampm}`;
-                                        }
-                                        
-                                        let timeDisplay = '';
-                                        if (ev.event_start_time && ev.event_end_time) {
-                                            timeDisplay = ` (${formatTime(ev.event_start_time)}–${formatTime(ev.event_end_time)})`;
-                                        } else if (ev.event_start_time) {
-                                            timeDisplay = ` (${formatTime(ev.event_start_time)})`;
-                                        }
-                                    %>
-                                    <option value="<%= ev.event_id %>" <%= info.event_id == ev.event_id ? 'selected' : '' %>>
-                                        <%= formattedDate %><%= timeDisplay %>
-                                    </option>
-                                <% }); %>
+                            <select class="form-select" name="event_id" id="eventInstanceSelect" required disabled>
+                                <option value="">Select an event above first</option>
                             </select>
                         </div>
                     </div>
@@ -1201,115 +1167,168 @@
 
         // ---------------- SURVEYS PAGE JS ----------------
         if (currentTable === "survey_results") {
-            const existingSurvey = <%- JSON.stringify(info || {}) %>;
-            const allEvents = <%- JSON.stringify(typeof events !== 'undefined' ? (events || []) : []) %>;
+            // Function to initialize survey form
+            function initializeSurveyForm() {
+                const existingSurvey = <%- JSON.stringify(info || {}) %>;
+                const allEvents = <%- JSON.stringify(typeof events !== 'undefined' ? (events || []) : []) %>;
 
-            const regInputs = document.querySelectorAll('input[name="registration_status"]');
-            const hiddenAttend = document.getElementById("attendStatusHidden");
+                // Debug logging
+                console.log("Survey form initialization");
+                console.log("Existing survey:", existingSurvey);
+                console.log("All events:", allEvents);
+                console.log("Events count:", allEvents.length);
 
-            if (regInputs && hiddenAttend) {
-                regInputs.forEach(input => {
-                    // Pre-select based on existing status
-                    if (existingSurvey.registration_status && input.value === existingSurvey.registration_status) {
-                        input.checked = true;
+                const regInputs = document.querySelectorAll('input[name="registration_status"]');
+                const hiddenAttend = document.getElementById("attendStatusHidden");
+
+                if (regInputs && hiddenAttend) {
+                    regInputs.forEach(input => {
+                        // Pre-select based on existing status
+                        if (existingSurvey.registration_status && input.value === existingSurvey.registration_status) {
+                            input.checked = true;
+                            hiddenAttend.value = (existingSurvey.registration_status === "attended") ? 1 : 0;
+                        }
+
+                        input.addEventListener("change", () => {
+                            hiddenAttend.value = (input.value === "attended") ? 1 : 0;
+                        });
+                    });
+
+                    if (!hiddenAttend.value && existingSurvey.registration_status) {
                         hiddenAttend.value = (existingSurvey.registration_status === "attended") ? 1 : 0;
                     }
-
-                    input.addEventListener("change", () => {
-                        hiddenAttend.value = (input.value === "attended") ? 1 : 0;
-                    });
-                });
-
-                if (!hiddenAttend.value && existingSurvey.registration_status) {
-                    hiddenAttend.value = (existingSurvey.registration_status === "attended") ? 1 : 0;
-                }
-            }
-
-            const eventSelectSurvey = document.getElementById("eventSelect");
-            const eventInstanceSelect = document.getElementById("eventInstanceSelect");
-
-            function formatTime(timeString) {
-                if (!timeString) return '';
-                if (timeString.includes('AM') || timeString.includes('PM')) return timeString;
-                const timeParts = timeString.toString().split(':');
-                let hours = parseInt(timeParts[0]);
-                const minutes = timeParts[1] || '00';
-                const ampm = hours >= 12 ? 'PM' : 'AM';
-                hours = hours % 12;
-                hours = hours ? hours : 12;
-                return `${hours}:${minutes} ${ampm}`;
-            }
-
-            function formatDate(dateString) {
-                if (!dateString) return '';
-                const date = new Date(dateString);
-                const month = String(date.getMonth() + 1).padStart(2, '0');
-                const day = String(date.getDate()).padStart(2, '0');
-                const year = date.getFullYear();
-                return `${month}/${day}/${year}`;
-            }
-
-            function formatEventOption(ev) {
-                let label = formatDate(ev.event_date);
-                if (ev.event_start_time && ev.event_end_time) {
-                    label += ` (${formatTime(ev.event_start_time)}–${formatTime(ev.event_end_time)})`;
-                } else if (ev.event_start_time) {
-                    label += ` (${formatTime(ev.event_start_time)})`;
-                }
-                return label;
-            }
-
-            function populateEventInstances(selectedName, preselectedId) {
-                eventInstanceSelect.innerHTML = "";
-                eventInstanceSelect.disabled = true;
-
-                if (!selectedName) {
-                    const opt = document.createElement("option");
-                    opt.value = "";
-                    opt.textContent = "Select an event above first";
-                    eventInstanceSelect.appendChild(opt);
-                    return;
                 }
 
-                const matchingEvents = allEvents.filter(ev => ev.event_name === selectedName);
+                const eventSelectSurvey = document.getElementById("eventSelect");
+                const eventInstanceSelect = document.getElementById("eventInstanceSelect");
 
-                if (matchingEvents.length === 0) {
-                    const opt = document.createElement("option");
-                    opt.value = "";
-                    opt.textContent = "No dates found for this event";
-                    eventInstanceSelect.appendChild(opt);
-                    return;
+                console.log("Event select element:", eventSelectSurvey);
+                console.log("Event instance select element:", eventInstanceSelect);
+
+                function formatTime(timeString) {
+                    if (!timeString) return '';
+                    if (timeString.includes('AM') || timeString.includes('PM')) return timeString;
+                    const timeParts = timeString.toString().split(':');
+                    let hours = parseInt(timeParts[0]);
+                    const minutes = timeParts[1] || '00';
+                    const ampm = hours >= 12 ? 'PM' : 'AM';
+                    hours = hours % 12;
+                    hours = hours ? hours : 12;
+                    return `${hours}:${minutes} ${ampm}`;
                 }
 
-                const defaultOpt = document.createElement("option");
-                defaultOpt.value = "";
-                defaultOpt.textContent = "Select a Date/Time";
-                eventInstanceSelect.appendChild(defaultOpt);
+                function formatDate(dateString) {
+                    if (!dateString) return '';
+                    const date = new Date(dateString);
+                    const month = String(date.getMonth() + 1).padStart(2, '0');
+                    const day = String(date.getDate()).padStart(2, '0');
+                    const year = date.getFullYear();
+                    return `${month}/${day}/${year}`;
+                }
 
-                matchingEvents.forEach(ev => {
-                    const opt = document.createElement("option");
-                    opt.value = ev.event_id;
-                    opt.textContent = formatEventOption(ev);
-                    if (preselectedId && String(preselectedId) === String(ev.event_id)) {
-                        opt.selected = true;
+                function formatEventOption(ev) {
+                    let label = formatDate(ev.event_date);
+                    if (ev.event_start_time && ev.event_end_time) {
+                        label += ` (${formatTime(ev.event_start_time)}–${formatTime(ev.event_end_time)})`;
+                    } else if (ev.event_start_time) {
+                        label += ` (${formatTime(ev.event_start_time)})`;
                     }
-                    eventInstanceSelect.appendChild(opt);
-                });
-
-                eventInstanceSelect.disabled = false;
-            }
-
-            if (eventSelectSurvey && eventInstanceSelect) {
-                // Pre-select existing event + instance on edit
-                if (existingSurvey.event_name) {
-                    eventSelectSurvey.value = existingSurvey.event_name;
-                    populateEventInstances(existingSurvey.event_name, existingSurvey.event_id);
+                    return label;
                 }
 
-                eventSelectSurvey.addEventListener("change", () => {
-                    const selectedName = eventSelectSurvey.value;
-                    populateEventInstances(selectedName, null);
-                });
+                function populateEventInstances(selectedName, preselectedId) {
+                    if (!eventInstanceSelect) {
+                        console.error("eventInstanceSelect element not found!");
+                        return;
+                    }
+                    
+                    console.log("Populating event instances for:", selectedName);
+                    console.log("Preselected ID:", preselectedId);
+                    
+                    eventInstanceSelect.innerHTML = "";
+                    eventInstanceSelect.disabled = true;
+
+                    if (!selectedName) {
+                        const opt = document.createElement("option");
+                        opt.value = "";
+                        opt.textContent = "Select an event above first";
+                        eventInstanceSelect.appendChild(opt);
+                        return;
+                    }
+
+                    // More robust matching - trim whitespace and handle case
+                    const matchingEvents = allEvents.filter(ev => {
+                        const evName = (ev.event_name || '').toString().trim();
+                        const selName = selectedName.toString().trim();
+                        return evName === selName;
+                    });
+
+                    console.log("Matching events found:", matchingEvents.length);
+                    console.log("Matching events:", matchingEvents);
+
+                    if (matchingEvents.length === 0) {
+                        console.warn("No matching events found for:", selectedName);
+                        console.log("Available event names:", allEvents.map(ev => ev.event_name));
+                        const opt = document.createElement("option");
+                        opt.value = "";
+                        opt.textContent = "No dates found for this event";
+                        eventInstanceSelect.appendChild(opt);
+                        return;
+                    }
+
+                    const defaultOpt = document.createElement("option");
+                    defaultOpt.value = "";
+                    defaultOpt.textContent = "Select a Date/Time";
+                    eventInstanceSelect.appendChild(defaultOpt);
+
+                    matchingEvents.forEach(ev => {
+                        const opt = document.createElement("option");
+                        opt.value = ev.event_id;
+                        opt.textContent = formatEventOption(ev);
+                        if (preselectedId && String(preselectedId) === String(ev.event_id)) {
+                            opt.selected = true;
+                            console.log("Pre-selected event ID:", ev.event_id);
+                        }
+                        eventInstanceSelect.appendChild(opt);
+                    });
+
+                    eventInstanceSelect.disabled = false;
+                    console.log("Event instances populated, enabled:", !eventInstanceSelect.disabled);
+                }
+
+                if (eventSelectSurvey && eventInstanceSelect) {
+                    console.log("Event select value:", eventSelectSurvey.value);
+                    console.log("Existing survey event_name:", existingSurvey.event_name);
+                    
+                    // Pre-select existing event + instance on edit
+                    if (existingSurvey.event_name) {
+                        eventSelectSurvey.value = existingSurvey.event_name;
+                        console.log("Setting event select to:", existingSurvey.event_name);
+                        populateEventInstances(existingSurvey.event_name, existingSurvey.event_id);
+                    } else {
+                        console.log("No existing event name, clearing instance select");
+                        // If no event is selected, clear the instance select
+                        populateEventInstances("", null);
+                    }
+
+                    eventSelectSurvey.addEventListener("change", () => {
+                        const selectedName = eventSelectSurvey.value;
+                        console.log("Event name changed to:", selectedName);
+                        populateEventInstances(selectedName, null);
+                    });
+                } else {
+                    console.error("Event select elements not found!");
+                    console.log("eventSelectSurvey:", eventSelectSurvey);
+                    console.log("eventInstanceSelect:", eventInstanceSelect);
+                }
+            }
+
+            // Run immediately if DOM is ready, otherwise wait for DOMContentLoaded
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initializeSurveyForm);
+            } else {
+                // DOM is already loaded
+                initializeSurveyForm();
             }
         }
 
@@ -1437,6 +1456,35 @@
                 this.parentElement.classList.remove('focused');
             });
         });
+
+        // ---------------- PREVENT DOUBLE FORM SUBMISSION ----------------
+        const addForm = document.getElementById('addForm');
+        if (addForm) {
+            let isSubmitting = false;
+            addForm.addEventListener('submit', function(e) {
+                if (isSubmitting) {
+                    e.preventDefault();
+                    return false;
+                }
+                isSubmitting = true;
+                
+                // Disable submit button
+                const submitBtn = addForm.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.textContent = submitBtn.textContent.includes('Edit') ? 'Updating...' : 'Submitting...';
+                }
+                
+                // Re-enable after 5 seconds as a safety measure
+                setTimeout(() => {
+                    isSubmitting = false;
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.textContent = submitBtn.textContent.replace('Updating...', 'Edit Survey').replace('Submitting...', 'Add Survey');
+                    }
+                }, 5000);
+            });
+        }
     </script>
 </body>
 </html>

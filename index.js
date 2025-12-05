@@ -898,24 +898,25 @@ app.get("/profile/:id", async (req, res) => {
 
     try {
       // Get pending surveys (attended events without survey results)
+      // Use NOT EXISTS to properly exclude events that have ANY survey submitted
       pendingSurveys = await knex("event_registrations as er")
         .join("events as e", "er.event_id", "e.event_id")
-        .leftJoin(
-          "survey_results as sr",
-          "er.event_registration_id",
-          "sr.event_registration_id"
-        )
         .where("er.user_id", participantId)
         .where("er.registration_attended_flag", 1) // Changed from true to 1
-        .where(function () {
-          this.whereNull("sr.survey_id").orWhereNull("sr.submission_date");
-        }) // No survey submitted yet
+        .whereNotExists(function () {
+          this.select("*")
+            .from("survey_results as sr")
+            .whereRaw("sr.event_registration_id = er.event_registration_id")
+            .whereNotNull("sr.survey_id")
+            .whereNotNull("sr.submission_date");
+        }) // No survey submitted yet (checking that NO survey exists for this registration)
         .select(
           "er.event_registration_id",
           "er.event_id",
           "e.event_name",
           "e.event_date"
         )
+        .distinct() // Ensure no duplicates
         .orderBy("e.event_date", "desc");
 
       // Count of pending surveys
@@ -1149,6 +1150,12 @@ app.post("/profile-edit/:table/:id", async (req, res) => {
     if (table_name === "survey_results") {
       const { user_id, event_id, event_name, ...surveyFields } = updatedData;
 
+      // Get the existing survey to preserve its event_registration_id if event/user aren't changed
+      const existingSurvey = await knex("survey_results")
+        .where("survey_id", id)
+        .select("event_registration_id")
+        .first();
+
       // If event_id and user_id are provided, find the corresponding event_registration_id
       if (event_id && user_id) {
         const registration = await knex("event_registrations")
@@ -1163,6 +1170,10 @@ app.post("/profile-edit/:table/:id", async (req, res) => {
             "No event registration found for the specified user and event"
           );
         }
+      } else if (existingSurvey && existingSurvey.event_registration_id) {
+        // If event_id/user_id aren't provided, preserve the existing event_registration_id
+        surveyFields.event_registration_id =
+          existingSurvey.event_registration_id;
       }
 
       // Only update valid survey_results columns
@@ -2606,6 +2617,69 @@ app.post("/add/:table", requireAdmin, async (req, res) => {
       }
     }
 
+    // Special handling for survey_results - prevent duplicates
+    if (table_name === "survey_results" && newData.event_registration_id) {
+      const existingSurveys = await knex("survey_results")
+        .where("event_registration_id", newData.event_registration_id)
+        .orderBy("survey_id", "desc");
+
+      if (existingSurveys.length > 0) {
+        // Find the most complete survey or use the most recent
+        const hasData = (s) => {
+          const score =
+            s.survey_satisfaction_score ||
+            s.survey_usefulness_score ||
+            s.survey_instructor_score ||
+            s.survey_recommendation_score ||
+            s.survey_overall_score;
+          return score !== null && score !== undefined && score !== "";
+        };
+
+        let surveyToUpdate =
+          existingSurveys.find(hasData) || existingSurveys[0];
+
+        // Normalize empty strings to null in newData
+        const normalizeValue = (val) =>
+          val === "" || val === null || val === undefined ? null : val;
+        const normalizedData = { ...newData };
+        [
+          "survey_satisfaction_score",
+          "survey_usefulness_score",
+          "survey_instructor_score",
+          "survey_recommendation_score",
+          "survey_overall_score",
+          "survey_nps_bucket",
+          "survey_comments",
+        ].forEach((key) => {
+          if (normalizedData[key] !== undefined) {
+            normalizedData[key] = normalizeValue(normalizedData[key]);
+          }
+        });
+
+        // Update the selected survey instead of inserting
+        await knex("survey_results")
+          .where("survey_id", surveyToUpdate.survey_id)
+          .update(normalizedData);
+
+        // Delete any other duplicate surveys
+        if (existingSurveys.length > 1) {
+          const idsToDelete = existingSurveys
+            .filter((s) => s.survey_id !== surveyToUpdate.survey_id)
+            .map((s) => s.survey_id);
+          if (idsToDelete.length > 0) {
+            await knex("survey_results")
+              .whereIn("survey_id", idsToDelete)
+              .delete();
+          }
+        }
+
+        req.session.flashMessage = "Survey updated!";
+        req.session.flashType = "success";
+        res.redirect("/surveys");
+        return;
+      }
+    }
+
     await knex(table_name).insert(newData);
 
     // Set flash message in session
@@ -2701,20 +2775,69 @@ app.post(
     const { date, time } = nowDate();
 
     try {
-      await knex("survey_results").insert({
+      // Check if any surveys already exist for this event registration
+      const existingSurveys = await knex("survey_results")
+        .where("event_registration_id", eventRegistrationId)
+        .orderBy("survey_id", "desc"); // Get most recent first
+
+      // Normalize empty strings to null
+      const normalizeValue = (val) =>
+        val === "" || val === null || val === undefined ? null : val;
+
+      const surveyData = {
         event_registration_id: eventRegistrationId,
-        survey_satisfaction_score,
-        survey_usefulness_score,
-        survey_instructor_score,
-        survey_recommendation_score,
-        survey_overall_score,
-        survey_nps_bucket,
-        survey_comments,
+        survey_satisfaction_score: normalizeValue(survey_satisfaction_score),
+        survey_usefulness_score: normalizeValue(survey_usefulness_score),
+        survey_instructor_score: normalizeValue(survey_instructor_score),
+        survey_recommendation_score: normalizeValue(
+          survey_recommendation_score
+        ),
+        survey_overall_score: normalizeValue(survey_overall_score),
+        survey_nps_bucket: normalizeValue(survey_nps_bucket),
+        survey_comments: normalizeValue(survey_comments),
         submission_date: date,
         submission_time: time,
-      });
+      };
 
-      req.session.flashMessage = "Survey submitted!";
+      if (existingSurveys.length > 0) {
+        // Find the most complete survey (one with actual data) or use the most recent
+        const hasData = (s) => {
+          const score =
+            s.survey_satisfaction_score ||
+            s.survey_usefulness_score ||
+            s.survey_instructor_score ||
+            s.survey_recommendation_score ||
+            s.survey_overall_score;
+          return score !== null && score !== undefined && score !== "";
+        };
+
+        let surveyToUpdate =
+          existingSurveys.find(hasData) || existingSurveys[0]; // Use first (most recent) if all are empty
+
+        // Update the selected survey
+        await knex("survey_results")
+          .where("survey_id", surveyToUpdate.survey_id)
+          .update(surveyData);
+
+        // Delete any other duplicate surveys for this event registration
+        if (existingSurveys.length > 1) {
+          const idsToDelete = existingSurveys
+            .filter((s) => s.survey_id !== surveyToUpdate.survey_id)
+            .map((s) => s.survey_id);
+          if (idsToDelete.length > 0) {
+            await knex("survey_results")
+              .whereIn("survey_id", idsToDelete)
+              .delete();
+          }
+        }
+
+        req.session.flashMessage = "Survey updated!";
+      } else {
+        // Insert new survey if none exists
+        await knex("survey_results").insert(surveyData);
+        req.session.flashMessage = "Survey submitted!";
+      }
+
       req.session.flashType = "success";
       res.redirect(`/profile/${registration.user_id}?tab=surveys`);
     } catch (err) {
@@ -2897,6 +3020,16 @@ app.post("/edit/:table/:id", requireAdmin, async (req, res) => {
     if (table_name === "survey_results") {
       const { user_id, event_id, event_name, ...surveyFields } = updatedData;
 
+      // Get the existing survey to preserve its event_registration_id if event/user aren't changed
+      const existingSurvey = await knex("survey_results")
+        .where("survey_id", id)
+        .select("event_registration_id")
+        .first();
+
+      if (!existingSurvey) {
+        throw new Error("Survey not found");
+      }
+
       // If event_id and user_id are provided, find the corresponding event_registration_id
       if (event_id && user_id) {
         const registration = await knex("event_registrations")
@@ -2911,6 +3044,10 @@ app.post("/edit/:table/:id", requireAdmin, async (req, res) => {
             "No event registration found for the specified user and event"
           );
         }
+      } else if (existingSurvey && existingSurvey.event_registration_id) {
+        // If event_id/user_id aren't provided, preserve the existing event_registration_id
+        surveyFields.event_registration_id =
+          existingSurvey.event_registration_id;
       }
 
       // Only update valid survey_results columns
@@ -2932,6 +3069,23 @@ app.post("/edit/:table/:id", requireAdmin, async (req, res) => {
         if (surveyFields[key] !== undefined) {
           updatedData[key] = surveyFields[key];
         }
+      }
+
+      // Ensure event_registration_id is always set
+      if (
+        !updatedData.event_registration_id &&
+        existingSurvey &&
+        existingSurvey.event_registration_id
+      ) {
+        updatedData.event_registration_id =
+          existingSurvey.event_registration_id;
+      }
+
+      // Validate that we have an event_registration_id before updating
+      if (!updatedData.event_registration_id) {
+        throw new Error(
+          "Cannot update survey: event_registration_id is required"
+        );
       }
     }
 
@@ -2968,7 +3122,26 @@ app.post("/edit/:table/:id", requireAdmin, async (req, res) => {
       }
     }
 
-    await knex(table_name).where(primaryKey, id).update(updatedData);
+    // For survey_results, verify the record exists before updating
+    if (table_name === "survey_results") {
+      const existingRecord = await knex(table_name)
+        .where(primaryKey, id)
+        .first();
+
+      if (!existingRecord) {
+        throw new Error(
+          `Survey with survey_id ${id} not found. Cannot update non-existent record.`
+        );
+      }
+    }
+
+    const rowsUpdated = await knex(table_name)
+      .where(primaryKey, id)
+      .update(updatedData);
+
+    if (rowsUpdated === 0) {
+      throw new Error(`No record found with ${primaryKey} = ${id} to update`);
+    }
 
     req.session.flashMessage = "Updated Successfully!";
     req.session.flashType = "success";
