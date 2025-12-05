@@ -635,6 +635,16 @@ app.post("/add/donations", async (req, res) => {
 
   console.log("Donation submission received:", newData); // Debug log
 
+  // Detect if this is an AJAX/fetch request (from donate_now page)
+  // Regular form submissions typically include 'text/html' in Accept header
+  // Fetch requests typically have Accept: */* or application/json
+  const isAjaxRequest =
+    req.headers["content-type"]?.includes("application/json") ||
+    req.xhr ||
+    (req.headers.accept?.includes("application/json") &&
+      !req.headers.accept?.includes("text/html")) ||
+    req.headers.accept === "*/*";
+
   try {
     // Validate required fields
     if (
@@ -642,10 +652,16 @@ app.post("/add/donations", async (req, res) => {
       !newData.donation_date ||
       !newData.donation_amount
     ) {
-      return res.json({
-        success: false,
-        error: "Missing required fields",
-      });
+      if (isAjaxRequest) {
+        return res.json({
+          success: false,
+          error: "Missing required fields",
+        });
+      }
+      // Otherwise, it's a form submission - redirect with error
+      req.session.flashMessage = "Error: Missing required fields";
+      req.session.flashType = "danger";
+      return res.redirect("/add/donations");
     }
 
     // Insert into database
@@ -653,17 +669,32 @@ app.post("/add/donations", async (req, res) => {
 
     console.log("Donation successfully inserted"); // Debug log
 
-    // Return success response
-    res.json({
-      success: true,
-      user_id: newData.user_id,
-    });
+    if (isAjaxRequest) {
+      // Return success response for AJAX
+      return res.json({
+        success: true,
+        user_id: newData.user_id,
+      });
+    }
+
+    // Otherwise, it's a form submission - redirect with success message
+    req.session.flashMessage = "Donation added successfully!";
+    req.session.flashType = "success";
+    res.redirect("/donations");
   } catch (err) {
     console.error("Error adding donation:", err); // Debug log
-    res.json({
-      success: false,
-      error: err.message,
-    });
+
+    if (isAjaxRequest) {
+      return res.json({
+        success: false,
+        error: err.message,
+      });
+    }
+
+    // Otherwise, it's a form submission - redirect with error
+    req.session.flashMessage = "Error adding donation: " + err.message;
+    req.session.flashType = "danger";
+    res.redirect("/add/donations");
   }
 });
 
@@ -1152,6 +1183,39 @@ app.post("/profile-edit/:table/:id", async (req, res) => {
       for (const key of validColumns) {
         if (surveyFields[key] !== undefined) {
           updatedData[key] = surveyFields[key];
+        }
+      }
+    }
+
+    // Special handling for event_registrations - filter out invalid columns
+    if (table_name === "event_registrations") {
+      const { event_name, registration_attend_status, ...registrationFields } =
+        updatedData;
+
+      // Map registration_attend_status to registration_attended_flag if provided
+      if (registration_attend_status !== undefined) {
+        registrationFields.registration_attended_flag =
+          registration_attend_status === "1" || registration_attend_status === 1
+            ? 1
+            : 0;
+      }
+
+      // Only update valid event_registrations columns
+      const validColumns = [
+        "user_id",
+        "event_id",
+        "registration_status",
+        "registration_attended_flag",
+        "registration_created_at_date",
+        "registration_created_at_time",
+        "registration_check_in_date",
+        "registration_check_in_time",
+      ];
+
+      updatedData = {};
+      for (const key of validColumns) {
+        if (registrationFields[key] !== undefined) {
+          updatedData[key] = registrationFields[key];
         }
       }
     }
@@ -2834,6 +2898,39 @@ app.post("/edit/:table/:id", requireAdmin, async (req, res) => {
       for (const key of validColumns) {
         if (surveyFields[key] !== undefined) {
           updatedData[key] = surveyFields[key];
+        }
+      }
+    }
+
+    // Special handling for event_registrations - filter out invalid columns
+    if (table_name === "event_registrations") {
+      const { event_name, registration_attend_status, ...registrationFields } =
+        updatedData;
+
+      // Map registration_attend_status to registration_attended_flag if provided
+      if (registration_attend_status !== undefined) {
+        registrationFields.registration_attended_flag =
+          registration_attend_status === "1" || registration_attend_status === 1
+            ? 1
+            : 0;
+      }
+
+      // Only update valid event_registrations columns
+      const validColumns = [
+        "user_id",
+        "event_id",
+        "registration_status",
+        "registration_attended_flag",
+        "registration_created_at_date",
+        "registration_created_at_time",
+        "registration_check_in_date",
+        "registration_check_in_time",
+      ];
+
+      updatedData = {};
+      for (const key of validColumns) {
+        if (registrationFields[key] !== undefined) {
+          updatedData[key] = registrationFields[key];
         }
       }
     }
