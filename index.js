@@ -2552,6 +2552,7 @@ app.post("/profile-add/milestones/:userId", async (req, res) => {
 app.post("/profile-add/survey_results", async (req, res) => {
   const {
     event_registration_id,
+    event_id,
     survey_satisfaction_score,
     survey_usefulness_score,
     survey_instructor_score,
@@ -2561,17 +2562,34 @@ app.post("/profile-add/survey_results", async (req, res) => {
     survey_comments,
   } = req.body;
 
-  const eventRegIdParsed = parseInt(event_registration_id, 10);
-  if (!Number.isInteger(eventRegIdParsed)) {
-    return res.status(400).send("Invalid event registration id.");
+  let eventRegIdParsed = parseInt(event_registration_id, 10);
+  let registration = null;
+
+  if (Number.isInteger(eventRegIdParsed)) {
+    registration = await knex("event_registrations")
+      .where("event_registration_id", eventRegIdParsed)
+      .first();
   }
 
-  const registration = await knex("event_registrations")
-    .where("event_registration_id", eventRegIdParsed)
-    .first();
-
+  // If no prefilled registration, try to find one by user + event_id
   if (!registration) {
-    return res.status(404).send("Event registration not found.");
+    const userIdFromSession = req.session.user?.id;
+    const eventIdParsed = parseInt(event_id, 10);
+    if (!Number.isInteger(userIdFromSession) || !Number.isInteger(eventIdParsed)) {
+      return res.status(400).send("Invalid event selection.");
+    }
+
+    registration = await knex("event_registrations")
+      .where("user_id", userIdFromSession)
+      .where("event_id", eventIdParsed)
+      .orderBy("registration_created_at_date", "desc")
+      .first();
+
+    if (!registration) {
+      return res.status(404).send("No matching event registration found for this user.");
+    }
+
+    eventRegIdParsed = registration.event_registration_id;
   }
 
   if (!requireSelfOrAdmin(req, res, registration.user_id)) return;
