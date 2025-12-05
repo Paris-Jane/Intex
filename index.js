@@ -2327,7 +2327,13 @@ app.get("/add/:table", requireAdmin, async (req, res) => {
       .orderBy(["event_name", "event_date", "event_start_time"]);
   }
 
-  res.render("add", { table_name, events, event_types, pass_id: null });
+  res.render("add", {
+    table_name,
+    events,
+    event_types,
+    pass_id: null,
+    survey_prefill: null,
+  });
 });
 
 // Route that will display an "Add entry" form with user id filled out (called from the profile pages)
