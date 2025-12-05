@@ -1945,7 +1945,7 @@ app.get("/milestones", requireAdmin, async (req, res) => {
       .join("users as p", "m.user_id", "p.user_id")
       .select(
         "m.milestone_id",
-        "m.user_id",
+        "p.user_id",
         "m.milestone_title",
         "m.milestone_date",
         "m.milestone_category",
@@ -2667,7 +2667,7 @@ app.get("/event_registrations", requireAdmin, async (req, res) => {
       .join("events as e", "er.event_id", "e.event_id")
       .select(
         "er.event_registration_id",
-        "er.user_id",
+        "p.user_id",
         "er.event_id",
         "er.registration_status",
         "er.registration_attended_flag",
